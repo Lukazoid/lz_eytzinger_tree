@@ -2,6 +2,10 @@
 name = "lz_etzynger_tree"
 version = "0.1.0"
 authors = ["Luke Horsley <luke.horsley@offset1337.co.uk>"]
+description = "An Etzynger tree implementation, this is an N-tree implemented using array storage"
+license = "MIT"
+keywords = ["tree", "etzynger"]
+categories = ["algorithms", "data-structures"]
 
 [dependencies]
 matches = "0.1.6"
