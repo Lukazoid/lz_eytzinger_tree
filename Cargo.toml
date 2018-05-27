@@ -1,0 +1,8 @@
+[package]
+name = "lz_etzynger_tree"
+version = "0.1.0"
+authors = ["Luke Horsley <luke.horsley@offset1337.co.uk>"]
+
+[dependencies]
+matches = "0.1.6"
+log = "0.4.1"
