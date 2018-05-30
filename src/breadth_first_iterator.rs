@@ -1,5 +1,5 @@
 use std::collections::VecDeque;
-use {EtzyngerTree, Node, NodeChildIterator, TraversalRoot};
+use {EytzingerTree, Node, NodeChildIterator, TraversalRoot};
 
 /// A breadth-first iterator.
 #[derive(Debug)]
@@ -21,7 +21,7 @@ impl<'a, N> Clone for BreadthFirstIterator<'a, N> {
 }
 
 impl<'a, N> BreadthFirstIterator<'a, N> {
-    pub(crate) fn new(tree: &'a EtzyngerTree<N>, node: Option<Node<'a, N>>) -> Self {
+    pub(crate) fn new(tree: &'a EytzingerTree<N>, node: Option<Node<'a, N>>) -> Self {
         let mut nodes = VecDeque::new();
 
         let root = if let Some(node) = node {
@@ -40,7 +40,7 @@ impl<'a, N> BreadthFirstIterator<'a, N> {
     }
 
     /// Gets the tree this iterator is for.
-    pub fn tree(&self) -> &'a EtzyngerTree<N> {
+    pub fn tree(&self) -> &'a EytzingerTree<N> {
         self.root.tree()
     }
 }

@@ -1,4 +1,4 @@
-use {EtzyngerTree, Node, NodeChildIterator, TraversalRoot};
+use {EytzingerTree, Node, NodeChildIterator, TraversalRoot};
 
 /// The order of depth-first iteration. This does NOT include in-order as the Etzyinger tree does
 /// not guarantee the actual order of nodes by value.
@@ -35,7 +35,7 @@ impl<'a, N> Clone for DepthFirstIterator<'a, N> {
 
 impl<'a, N> DepthFirstIterator<'a, N> {
     pub(crate) fn new(
-        tree: &'a EtzyngerTree<N>,
+        tree: &'a EytzingerTree<N>,
         node: Option<Node<'a, N>>,
         order: DepthFirstOrder,
     ) -> Self {
@@ -64,7 +64,7 @@ impl<'a, N> DepthFirstIterator<'a, N> {
     }
 
     /// Gets the tree this iterator is for.
-    pub fn tree(&self) -> &'a EtzyngerTree<N> {
+    pub fn tree(&self) -> &'a EytzingerTree<N> {
         self.root.tree()
     }
 }

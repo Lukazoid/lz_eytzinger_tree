@@ -1,6 +1,6 @@
-extern crate lz_etzynger_tree;
+extern crate lz_eytzinger_tree;
 
-use lz_etzynger_tree::EtzyngerTree;
+use lz_eytzinger_tree::EytzingerTree;
 
 fn main() {
     let mut binary_tree = BinaryTree::new();
@@ -15,13 +15,13 @@ fn main() {
 
 #[derive(Debug)]
 pub struct BinaryTree<T> {
-    tree: EtzyngerTree<T>,
+    tree: EytzingerTree<T>,
 }
 
 impl<T> BinaryTree<T> {
     fn new() -> Self {
         Self {
-            tree: EtzyngerTree::new(2),
+            tree: EytzingerTree::new(2),
         }
     }
 }

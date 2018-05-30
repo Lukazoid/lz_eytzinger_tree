@@ -1,9 +1,6 @@
 #[macro_use]
 extern crate matches;
 
-#[macro_use]
-extern crate log;
-
 mod node_mut;
 pub use self::node_mut::NodeMut;
 
@@ -31,16 +28,16 @@ pub(crate) fn same_object<T>(a: *const T, b: *const T) -> bool {
     a == b
 }
 
-/// An Etzynger tree is an N-tree stored in an array structure.
+/// An Eytzinger tree is an N-tree stored in an array structure.
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
-pub struct EtzyngerTree<N> {
+pub struct EytzingerTree<N> {
     nodes: Vec<Option<N>>,
     max_children_per_node: usize,
     len: usize,
 }
 
-impl<N> EtzyngerTree<N> {
-    /// Creates a new Etzynger tree with the specified maximum number of child nodes per parent.
+impl<N> EytzingerTree<N> {
+    /// Creates a new Eytzinger tree with the specified maximum number of child nodes per parent.
     pub fn new(max_children_per_node: usize) -> Self {
         Self {
             nodes: vec![None],
@@ -59,12 +56,12 @@ impl<N> EtzyngerTree<N> {
         BreadthFirstIterator::new(self, self.root())
     }
 
-    /// Gets whether the Etzynger tree is empty.
+    /// Gets whether the Eytzinger tree is empty.
     pub fn is_empty(&self) -> bool {
         self.len() == 0
     }
 
-    /// Gets the number of nodes in the Etzynger tree.
+    /// Gets the number of nodes in the Eytzinger tree.
     pub fn len(&self) -> usize {
         self.len
     }
@@ -74,7 +71,7 @@ impl<N> EtzyngerTree<N> {
         self.max_children_per_node
     }
 
-    /// Clears the Etzynger tree, removing all nodes.
+    /// Clears the Eytzinger tree, removing all nodes.
     pub fn clear(&mut self) {
         self.nodes.truncate(1);
         self.nodes[0] = None;
@@ -225,11 +222,11 @@ impl<N> EtzyngerTree<N> {
 
 #[cfg(test)]
 mod tests {
-    use {DepthFirstOrder, EtzyngerTree};
+    use {DepthFirstOrder, EytzingerTree};
 
     #[test]
     fn root_is_none_for_empty() {
-        let mut tree = EtzyngerTree::<u32>::new(2);
+        let mut tree = EytzingerTree::<u32>::new(2);
 
         assert_matches!(tree.root(), None);
         assert_matches!(tree.root_mut(), None);
@@ -237,7 +234,7 @@ mod tests {
 
     #[test]
     fn set_root_value_sets_root() {
-        let mut tree = EtzyngerTree::<u32>::new(2);
+        let mut tree = EytzingerTree::<u32>::new(2);
 
         let expected_root = Some(5);
         tree.set_root_value(expected_root);
@@ -248,7 +245,7 @@ mod tests {
 
     #[test]
     fn depth_first_iter_returns_empty_for_empty_tree() {
-        let tree = EtzyngerTree::<u32>::new(2);
+        let tree = EytzingerTree::<u32>::new(2);
 
         assert_matches!(
             tree.depth_first_iter(DepthFirstOrder::PostOrder).next(),
@@ -258,7 +255,7 @@ mod tests {
 
     #[test]
     fn depth_first_iter_returns_depth_first() {
-        let mut tree = EtzyngerTree::<u32>::new(2);
+        let mut tree = EytzingerTree::<u32>::new(2);
         {
             let mut root = tree.set_root_value(5);
             {
@@ -293,14 +290,14 @@ mod tests {
 
     #[test]
     fn breadth_first_iter_returns_empty_for_empty_tree() {
-        let tree = EtzyngerTree::<u32>::new(2);
+        let tree = EytzingerTree::<u32>::new(2);
 
         assert_matches!(tree.breadth_first_iter().next(), None)
     }
 
     #[test]
     fn breadth_first_iter_returns_breadth_first() {
-        let mut tree = EtzyngerTree::<u32>::new(2);
+        let mut tree = EytzingerTree::<u32>::new(2);
         {
             let mut root = tree.set_root_value(5);
             {

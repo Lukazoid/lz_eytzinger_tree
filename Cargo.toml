@@ -1,12 +1,11 @@
 [package]
-name = "lz_etzynger_tree"
+name = "lz_eytzinger_tree"
 version = "0.1.0"
 authors = ["Luke Horsley <luke.horsley@offset1337.co.uk>"]
-description = "An Etzynger tree implementation, this is an N-tree implemented using array storage"
+description = "An Eytzinger tree implementation, this is an N-tree implemented using array storage"
 license = "MIT"
-keywords = ["tree", "etzynger"]
+keywords = ["tree", "eytzinger"]
 categories = ["algorithms", "data-structures"]
 
 [dependencies]
 matches = "0.1.6"
-log = "0.4.1"

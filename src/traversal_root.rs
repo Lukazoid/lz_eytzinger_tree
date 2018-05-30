@@ -1,11 +1,11 @@
-use {EtzyngerTree, Node};
+use {EytzingerTree, Node};
 
 #[derive(Debug)]
 pub(crate) enum TraversalRoot<'a, N>
 where
     N: 'a,
 {
-    Tree(&'a EtzyngerTree<N>),
+    Tree(&'a EytzingerTree<N>),
     Node(Node<'a, N>),
 }
 
@@ -17,7 +17,7 @@ impl<'a, N> TraversalRoot<'a, N> {
         }
     }
 
-    pub fn tree(&self) -> &'a EtzyngerTree<N> {
+    pub fn tree(&self) -> &'a EytzingerTree<N> {
         match self {
             TraversalRoot::Tree(tree) => tree,
             TraversalRoot::Node(node) => node.tree(),

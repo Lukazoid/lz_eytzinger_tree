@@ -1,22 +1,22 @@
 use std::hash::{Hash, Hasher};
 use std::ops::Deref;
-use {same_object, BreadthFirstIterator, DepthFirstIterator, DepthFirstOrder, EtzyngerTree,
+use {same_object, BreadthFirstIterator, DepthFirstIterator, DepthFirstOrder, EytzingerTree,
      NodeChildIterator, NodeMut};
 
-/// Represents a borrowed node in the Etzynger tree. This node may be used to navigate to parent or
+/// Represents a borrowed node in the Eytzinger tree. This node may be used to navigate to parent or
 /// child nodes.
 #[derive(Debug)]
 pub struct Node<'a, N>
 where
     N: 'a,
 {
-    pub(crate) tree: &'a EtzyngerTree<N>,
+    pub(crate) tree: &'a EytzingerTree<N>,
     pub(crate) index: usize,
 }
 
 impl<'a, N> Hash for Node<'a, N> {
     fn hash<H: Hasher>(&self, state: &mut H) {
-        (self.tree as *const EtzyngerTree<N>).hash(state);
+        (self.tree as *const EytzingerTree<N>).hash(state);
         self.index.hash(state);
     }
 }
@@ -40,15 +40,15 @@ impl<'a, N> Clone for Node<'a, N> {
 }
 
 impl<'a, N> Node<'a, N> {
-    /// Gets the Etzynger tree this node is for.
+    /// Gets the Eytzinger tree this node is for.
     ///
     /// # Examples
     ///
     /// ```
-    /// use lz_etzynger_tree::{EtzyngerTree, Node};
+    /// use lz_eytzinger_tree::{EytzingerTree, Node};
     ///
     /// let tree = {
-    ///     let mut tree = EtzyngerTree::<u32>::new(8);
+    ///     let mut tree = EytzingerTree::<u32>::new(8);
     ///     tree.set_root_value(5);
     ///     tree
     /// };
@@ -56,7 +56,7 @@ impl<'a, N> Node<'a, N> {
     /// let root = tree.root().unwrap();
     /// assert_eq!(root.tree(), &tree);
     /// ```
-    pub fn tree(&self) -> &'a EtzyngerTree<N> {
+    pub fn tree(&self) -> &'a EytzingerTree<N> {
         self.tree
     }
 
@@ -69,10 +69,10 @@ impl<'a, N> Node<'a, N> {
     /// # Examples
     ///
     /// ```    
-    /// use lz_etzynger_tree::{EtzyngerTree, Node};
+    /// use lz_eytzinger_tree::{EytzingerTree, Node};
     ///
     /// let tree = {
-    ///     let mut tree = EtzyngerTree::<u32>::new(8);
+    ///     let mut tree = EytzingerTree::<u32>::new(8);
     ///     tree.set_root_value(5);
     ///     tree
     /// };
@@ -92,10 +92,10 @@ impl<'a, N> Node<'a, N> {
     /// # Examples
     ///
     /// ```    
-    /// use lz_etzynger_tree::{EtzyngerTree, Node};
+    /// use lz_eytzinger_tree::{EytzingerTree, Node};
     ///
     /// let tree = {
-    ///     let mut tree = EtzyngerTree::<u32>::new(8);
+    ///     let mut tree = EytzingerTree::<u32>::new(8);
     ///     {
     ///         let mut root = tree.set_root_value(5);
     ///         root.set_child_value(2, 3);
@@ -116,10 +116,10 @@ impl<'a, N> Node<'a, N> {
     /// # Examples
     ///
     /// ```    
-    /// use lz_etzynger_tree::{EtzyngerTree, Node};
+    /// use lz_eytzinger_tree::{EytzingerTree, Node};
     ///
     /// let tree = {
-    ///     let mut tree = EtzyngerTree::<u32>::new(8);
+    ///     let mut tree = EytzingerTree::<u32>::new(8);
     ///     {
     ///         let mut root = tree.set_root_value(5);
     ///         root.set_child_value(2, 3);
@@ -141,10 +141,10 @@ impl<'a, N> Node<'a, N> {
     /// # Examples
     ///
     /// ```
-    /// use lz_etzynger_tree::{EtzyngerTree, Node};
+    /// use lz_eytzinger_tree::{EytzingerTree, Node};
     ///
     /// let tree = {
-    ///     let mut tree = EtzyngerTree::<u32>::new(8);
+    ///     let mut tree = EytzingerTree::<u32>::new(8);
     ///     {
     ///         let mut root = tree.set_root_value(5);
     ///         root.set_child_value(0, 1);
