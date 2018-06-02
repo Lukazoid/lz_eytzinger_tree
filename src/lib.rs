@@ -7,6 +7,9 @@ pub use self::node_mut::NodeMut;
 mod node;
 pub use self::node::Node;
 
+mod entry;
+pub use self::entry::{Entry, OccupiedEntry, VacantEntry};
+
 mod node_child_iterator;
 pub use self::node_child_iterator::NodeChildIterator;
 
@@ -97,14 +100,12 @@ impl<N> EytzingerTree<N> {
         self.set_value(0, value.into())
     }
 
+    pub fn root_entry(&mut self) -> Entry<N> {
+        self.entry(0)
+    }
+
     fn set_child_value(&mut self, parent: usize, child: usize, new_value: Option<N>) -> NodeMut<N> {
-        assert!(
-            child < self.max_children_per_node,
-            "the child index should be less than max_children_per_node"
-        );;
-
         let child_index = self.child_index(parent, child);
-
         self.set_value(child_index, new_value)
     }
 
@@ -147,6 +148,11 @@ impl<N> EytzingerTree<N> {
     }
 
     fn child_index(&self, parent: usize, child: usize) -> usize {
+        assert!(
+            child < self.max_children_per_node,
+            "the child index should be less than max_children_per_node"
+        );
+
         (parent * self.max_children_per_node) + child + 1
     }
 
@@ -175,6 +181,18 @@ impl<N> EytzingerTree<N> {
         } else {
             Err(self)
         }
+    }
+
+    fn entry(&mut self, index: usize) -> Entry<N> {
+        match self.node_mut(index) {
+            Ok(node) => Entry::Occupied(OccupiedEntry { node }),
+            Err(tree) => Entry::Vacant(VacantEntry { tree, index }),
+        }
+    }
+
+    fn child_entry(&mut self, parent: usize, child: usize) -> Entry<N> {
+        let child_index = self.child_index(parent, child);
+        self.entry(child_index)
     }
 
     fn value(&self, index: usize) -> &Option<N> {

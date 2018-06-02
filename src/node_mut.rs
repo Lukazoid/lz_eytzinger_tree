@@ -1,5 +1,5 @@
 use std::ops::{Deref, DerefMut};
-use {BreadthFirstIterator, DepthFirstIterator, DepthFirstOrder, EytzingerTree, Node,
+use {BreadthFirstIterator, DepthFirstIterator, DepthFirstOrder, Entry, EytzingerTree, Node,
      NodeChildIterator};
 
 /// Represents a borrowed node in the Eytzinger tree. This node may be used mutate this node's value
@@ -94,6 +94,11 @@ impl<'a, N> NodeMut<'a, N> {
         self.tree.child_mut(self.index, index).ok()
     }
 
+    /// Gets the mutable child of this node at the specified index or `None` if there wasn't one.
+    /// This differs from `child_mut` in that it takes ownership of the parent and is lifetime
+    /// bound to the tree and not to its parent.
+    /// 
+    /// 
     pub fn to_child(self, index: usize) -> Result<Self, Self> {
         let tree = self.tree;
         match tree.child_mut(self.index, index) {
@@ -116,6 +121,14 @@ impl<'a, N> NodeMut<'a, N> {
     {
         self.tree
             .set_child_value(self.index, index, new_value.into())
+    }
+
+    pub fn child_entry(&mut self, index: usize) -> Entry<N> {
+        self.tree.child_entry(self.index, index)
+    }
+
+    pub fn to_child_entry(self, index: usize) -> Entry<'a, N> {
+        self.tree.child_entry(self.index, index)
     }
 
     /// Removes this node from the tree.
