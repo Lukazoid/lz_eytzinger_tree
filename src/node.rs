@@ -1,11 +1,10 @@
-use std::hash::{Hash, Hasher};
 use std::ops::Deref;
-use {same_object, BreadthFirstIterator, DepthFirstIterator, DepthFirstOrder, EytzingerTree,
-     NodeChildIterator, NodeMut};
+use {BreadthFirstIterator, DepthFirstIterator, DepthFirstOrder, EytzingerTree, NodeChildIterator,
+     NodeMut};
 
 /// Represents a borrowed node in the Eytzinger tree. This node may be used to navigate to parent or
 /// child nodes.
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq, Hash)]
 pub struct Node<'a, N>
 where
     N: 'a,
@@ -13,20 +12,6 @@ where
     pub(crate) tree: &'a EytzingerTree<N>,
     pub(crate) index: usize,
 }
-
-impl<'a, N> Hash for Node<'a, N> {
-    fn hash<H: Hasher>(&self, state: &mut H) {
-        (self.tree as *const EytzingerTree<N>).hash(state);
-        self.index.hash(state);
-    }
-}
-
-impl<'a, N> PartialEq for Node<'a, N> {
-    fn eq(&self, other: &Self) -> bool {
-        same_object(self.tree, other.tree) && self.index == other.index
-    }
-}
-impl<'a, N> Eq for Node<'a, N> {}
 
 impl<'a, N> Copy for Node<'a, N> {}
 

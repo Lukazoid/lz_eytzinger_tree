@@ -21,13 +21,6 @@ pub use self::depth_first_iterator::{DepthFirstIterator, DepthFirstOrder};
 
 use std::mem;
 
-/// Determines whether two pointers/borrows are pointing at the same value. This differs from a
-/// normal equality comparison by comparing where is being pointed to instead of comparing the
-/// values being pointed to.
-pub(crate) fn same_object<T>(a: *const T, b: *const T) -> bool {
-    a == b
-}
-
 /// An Eytzinger tree is an N-tree stored in an array structure.
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub struct EytzingerTree<N> {
