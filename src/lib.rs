@@ -10,17 +10,20 @@ pub use self::node::Node;
 mod entry;
 pub use self::entry::{Entry, OccupiedEntry, VacantEntry};
 
-mod node_child_iterator;
-pub use self::node_child_iterator::NodeChildIterator;
+mod node_child_iter;
+pub use self::node_child_iter::NodeChildIter;
 
 mod traversal_root;
 pub(crate) use self::traversal_root::TraversalRoot;
 
-mod breadth_first_iterator;
-pub use self::breadth_first_iterator::BreadthFirstIterator;
+mod breadth_first_iter;
+pub use self::breadth_first_iter::BreadthFirstIter;
 
-mod depth_first_iterator;
-pub use self::depth_first_iterator::{DepthFirstIterator, DepthFirstOrder};
+mod depth_first_order;
+pub use self::depth_first_order::DepthFirstOrder;
+
+mod depth_first_iter;
+pub use self::depth_first_iter::DepthFirstIter;
 
 use std::mem;
 
@@ -43,13 +46,13 @@ impl<N> EytzingerTree<N> {
     }
 
     /// Gets a depth first iterator over all nodes.
-    pub fn depth_first_iter(&self, order: DepthFirstOrder) -> DepthFirstIterator<N> {
-        DepthFirstIterator::new(self, self.root(), order)
+    pub fn depth_first_iter(&self, order: DepthFirstOrder) -> DepthFirstIter<N> {
+        DepthFirstIter::new(self, self.root(), order)
     }
 
     /// Gets a breadth first iterator over all nodes.
-    pub fn breadth_first_iter(&self) -> BreadthFirstIterator<N> {
-        BreadthFirstIterator::new(self, self.root())
+    pub fn breadth_first_iter(&self) -> BreadthFirstIter<N> {
+        BreadthFirstIter::new(self, self.root())
     }
 
     /// Gets whether the Eytzinger tree is empty.
@@ -88,7 +91,7 @@ impl<N> EytzingerTree<N> {
         self.node_mut(0).ok()
     }
 
-    /// Sets the value of the root node. If the new value is `None` then all 
+    /// Sets the value of the root node. If the new value is `None` then all
     /// children will be removed.
     ///
     /// # Returns
@@ -102,8 +105,8 @@ impl<N> EytzingerTree<N> {
     }
 
     /// Gets the entry for the root node.
-    /// 
-    /// # Examples 
+    ///
+    /// # Examples
     ///
     /// ```    
     /// use lz_eytzinger_tree::{EytzingerTree, Entry};
@@ -142,7 +145,7 @@ impl<N> EytzingerTree<N> {
                 self.len -= 1;
 
                 let mut indices_to_remove = vec![];
-                for child_node in DepthFirstIterator::new(
+                for child_node in DepthFirstIter::new(
                     self,
                     Some(Node { tree: self, index }),
                     DepthFirstOrder::PostOrder,

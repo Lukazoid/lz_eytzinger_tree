@@ -2,7 +2,7 @@ use Node;
 
 /// An iterator over the immediate children of a single node.
 #[derive(Debug)]
-pub struct NodeChildIterator<'a, N>
+pub struct NodeChildIter<'a, N>
 where
     N: 'a,
 {
@@ -10,16 +10,16 @@ where
     index: usize,
 }
 
-impl<'a, N> Clone for NodeChildIterator<'a, N> {
+impl<'a, N> Clone for NodeChildIter<'a, N> {
     fn clone(&self) -> Self {
-        NodeChildIterator {
+        NodeChildIter {
             node: self.node,
             index: self.index,
         }
     }
 }
 
-impl<'a, N> NodeChildIterator<'a, N> {
+impl<'a, N> NodeChildIter<'a, N> {
     pub(crate) fn new(node: Node<'a, N>) -> Self {
         Self { node, index: 0 }
     }
@@ -30,7 +30,7 @@ impl<'a, N> NodeChildIterator<'a, N> {
     }
 }
 
-impl<'a, N> Iterator for NodeChildIterator<'a, N> {
+impl<'a, N> Iterator for NodeChildIter<'a, N> {
     type Item = Node<'a, N>;
 
     fn next(&mut self) -> Option<Self::Item> {

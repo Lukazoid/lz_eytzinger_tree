@@ -1,6 +1,6 @@
 use std::ops::{Deref, DerefMut};
-use {BreadthFirstIterator, DepthFirstIterator, DepthFirstOrder, Entry, EytzingerTree, Node,
-     NodeChildIterator};
+use {BreadthFirstIter, DepthFirstIter, DepthFirstOrder, Entry, EytzingerTree, Node,
+     NodeChildIter};
 
 /// Represents a borrowed node in the Eytzinger tree. This node may be used mutate this node's value
 /// and child nodes.
@@ -189,15 +189,15 @@ impl<'a, N> NodeMut<'a, N> {
     /// let child_values: Vec<_> = root.child_iter().map(|n| n.value()).collect();
     /// assert_eq!(child_values, vec![&1, &3]);
     /// ```
-    pub fn child_iter<'b>(&'b self) -> NodeChildIterator<'b, N> {
+    pub fn child_iter<'b>(&'b self) -> NodeChildIter<'b, N> {
         self.as_node().child_iter()
     }
 
-    pub fn depth_first_iter<'b>(&'b self, order: DepthFirstOrder) -> DepthFirstIterator<'b, N> {
+    pub fn depth_first_iter<'b>(&'b self, order: DepthFirstOrder) -> DepthFirstIter<'b, N> {
         self.as_node().depth_first_iter(order)
     }
 
-    pub fn breadth_first_iter<'b>(&'b self) -> BreadthFirstIterator<'b, N> {
+    pub fn breadth_first_iter<'b>(&'b self) -> BreadthFirstIter<'b, N> {
         self.as_node().breadth_first_iter()
     }
 }

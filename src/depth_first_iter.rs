@@ -1,30 +1,20 @@
-use {EytzingerTree, Node, NodeChildIterator, TraversalRoot};
-
-/// The order of depth-first iteration. This does NOT include in-order as the Etzyinger tree does
-/// not guarantee the actual order of nodes by value.
-#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
-pub enum DepthFirstOrder {
-    /// Parent nodes are returned before their children.
-    PreOrder,
-    /// Child nodes are returned before their parents.
-    PostOrder,
-}
+use {DepthFirstOrder, EytzingerTree, Node, NodeChildIter, TraversalRoot};
 
 /// A depth-first iterator
 #[derive(Debug)]
-pub struct DepthFirstIterator<'a, N>
+pub struct DepthFirstIter<'a, N>
 where
     N: 'a,
 {
     order: DepthFirstOrder,
     root: TraversalRoot<'a, N>,
     first_pending: Option<Node<'a, N>>,
-    nodes: Vec<NodeChildIterator<'a, N>>,
+    nodes: Vec<NodeChildIter<'a, N>>,
 }
 
-impl<'a, N> Clone for DepthFirstIterator<'a, N> {
+impl<'a, N> Clone for DepthFirstIter<'a, N> {
     fn clone(&self) -> Self {
-        DepthFirstIterator {
+        DepthFirstIter {
             order: self.order,
             root: self.root,
             first_pending: self.first_pending,
@@ -33,7 +23,7 @@ impl<'a, N> Clone for DepthFirstIterator<'a, N> {
     }
 }
 
-impl<'a, N> DepthFirstIterator<'a, N> {
+impl<'a, N> DepthFirstIter<'a, N> {
     pub(crate) fn new(
         tree: &'a EytzingerTree<N>,
         node: Option<Node<'a, N>>,
@@ -69,7 +59,7 @@ impl<'a, N> DepthFirstIterator<'a, N> {
     }
 }
 
-impl<'a, N> Iterator for DepthFirstIterator<'a, N> {
+impl<'a, N> Iterator for DepthFirstIter<'a, N> {
     type Item = Node<'a, N>;
 
     fn next(&mut self) -> Option<Self::Item> {
