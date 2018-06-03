@@ -95,10 +95,8 @@ impl<'a, N> NodeMut<'a, N> {
     }
 
     /// Gets the mutable child of this node at the specified index or `None` if there wasn't one.
-    /// This differs from `child_mut` in that it takes ownership of the parent and is lifetime
-    /// bound to the tree and not to its parent.
-    /// 
-    /// 
+    /// This differs from `child_mut` in that it takes ownership of the current node and is 
+    /// lifetime bound to the tree and not to the current node.
     pub fn to_child(self, index: usize) -> Result<Self, Self> {
         let tree = self.tree;
         match tree.child_mut(self.index, index) {
@@ -123,10 +121,15 @@ impl<'a, N> NodeMut<'a, N> {
             .set_child_value(self.index, index, new_value.into())
     }
 
+    /// Gets the child entry of this node at the specified index. This node is not consumed in the 
+    /// process so the child entry is lifetime bound to this node.
     pub fn child_entry(&mut self, index: usize) -> Entry<N> {
         self.tree.child_entry(self.index, index)
     }
 
+    /// Gets the child entry of this node at the specified index. This differs from `child_entry` 
+    /// in that it takes ownership of the current node and the entry is lifetime bound to the tree
+    /// and not to the current node.
     pub fn to_child_entry(self, index: usize) -> Entry<'a, N> {
         self.tree.child_entry(self.index, index)
     }

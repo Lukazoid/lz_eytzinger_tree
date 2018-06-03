@@ -100,6 +100,22 @@ impl<N> EytzingerTree<N> {
         self.set_value(0, value.into())
     }
 
+    /// Gets the entry for the root node.
+    /// 
+    /// # Examples 
+    ///
+    /// ```    
+    /// use lz_eytzinger_tree::{EytzingerTree, Entry};
+    ///
+    /// let tree = {
+    ///     let mut tree = EytzingerTree::<u32>::new(8);
+    ///     tree.root_entry().or_insert(5);
+    ///     tree
+    /// };
+    ///
+    /// let root = tree.root().unwrap();
+    /// assert_eq!(root.value(), &5);
+    /// ```
     pub fn root_entry(&mut self) -> Entry<N> {
         self.entry(0)
     }
