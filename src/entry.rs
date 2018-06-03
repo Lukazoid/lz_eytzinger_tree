@@ -66,4 +66,12 @@ impl<'a, N> Entry<'a, N> {
             entry @ Entry::Vacant(_) => entry,
         }
     }
+
+    /// Removes the node if one existed.
+    pub fn remove(self) {
+        match self {
+            Entry::Occupied(occupied) => occupied.node.remove(),
+            Entry::Vacant(_) => {}
+        }
+    }
 }
