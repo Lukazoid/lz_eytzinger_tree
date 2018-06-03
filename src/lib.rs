@@ -88,16 +88,17 @@ impl<N> EytzingerTree<N> {
         self.node_mut(0).ok()
     }
 
-    /// Sets the value of the root node.
+    /// Sets the value of the root node. If the new value is `None` then all 
+    /// children will be removed.
     ///
     /// # Returns
     ///
     /// The new root node.
-    pub fn set_root_value<V>(&mut self, value: V) -> NodeMut<N>
+    pub fn set_root_value<V>(&mut self, new_value: V) -> NodeMut<N>
     where
         V: Into<Option<N>>,
     {
-        self.set_value(0, value.into())
+        self.set_value(0, new_value.into())
     }
 
     /// Gets the entry for the root node.

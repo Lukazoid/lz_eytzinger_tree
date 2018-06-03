@@ -108,7 +108,8 @@ impl<'a, N> NodeMut<'a, N> {
         }
     }
 
-    /// Sets the value of the child at the specified index.
+    /// Sets the value of the child at the specified index. If the new value is `None` then all 
+    /// children of the child will be removed.
     ///
     /// # Returns
     ///
