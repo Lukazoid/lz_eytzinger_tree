@@ -1,6 +1,5 @@
 use std::ops::Deref;
-use {BreadthFirstIter, DepthFirstIter, DepthFirstOrder, EytzingerTree, NodeChildIter,
-     NodeMut};
+use {BreadthFirstIter, DepthFirstIter, DepthFirstOrder, EytzingerTree, NodeChildIter, NodeMut};
 
 /// Represents a borrowed node in the Eytzinger tree. This node may be used to navigate to parent or
 /// child nodes.
@@ -147,12 +146,12 @@ impl<'a, N> Node<'a, N> {
         NodeChildIter::new(*self)
     }
 
-    /// Gets a depth first iterator over this and all child nodes.
+    /// Gets a depth-first iterator over this and all child nodes.
     pub fn depth_first_iter(&self, order: DepthFirstOrder) -> DepthFirstIter<'a, N> {
         DepthFirstIter::new(self.tree(), Some(*self), order)
     }
 
-    /// Gets a breadth first iterator over this and all child nodes.
+    /// Gets a breadth-first iterator over this and all child nodes.
     pub fn breadth_first_iter(&self) -> BreadthFirstIter<'a, N> {
         BreadthFirstIter::new(self.tree(), Some(*self))
     }

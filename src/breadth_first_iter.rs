@@ -34,7 +34,8 @@ impl<'a, N> BreadthFirstIter<'a, N> {
         Self { root, nodes }
     }
 
-    /// Gets the starting/root node of this iterator.
+    /// Gets the starting/root node of this iterator or `None` if there was not one. There will be
+    /// no starting node for an empty Eytzinger tree.
     pub fn starting_node(&self) -> Option<Node<'a, N>> {
         self.root.starting_node()
     }

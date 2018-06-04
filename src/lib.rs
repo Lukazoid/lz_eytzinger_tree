@@ -8,7 +8,7 @@ mod node;
 pub use self::node::Node;
 
 mod entry;
-pub use self::entry::{Entry, OccupiedEntry, VacantEntry};
+pub use self::entry::{Entry, VacantEntry};
 
 mod node_child_iter;
 pub use self::node_child_iter::NodeChildIter;
@@ -37,6 +37,10 @@ pub struct EytzingerTree<N> {
 
 impl<N> EytzingerTree<N> {
     /// Creates a new Eytzinger tree with the specified maximum number of child nodes per parent.
+    ///
+    /// # Returns
+    ///
+    /// The new Eytzinger tree.
     pub fn new(max_children_per_node: usize) -> Self {
         Self {
             nodes: vec![None],
@@ -45,12 +49,12 @@ impl<N> EytzingerTree<N> {
         }
     }
 
-    /// Gets a depth first iterator over all nodes.
+    /// Gets a depth-first iterator over all nodes.
     pub fn depth_first_iter(&self, order: DepthFirstOrder) -> DepthFirstIter<N> {
         DepthFirstIter::new(self, self.root(), order)
     }
 
-    /// Gets a breadth first iterator over all nodes.
+    /// Gets a breadth-first iterator over all nodes.
     pub fn breadth_first_iter(&self) -> BreadthFirstIter<N> {
         BreadthFirstIter::new(self, self.root())
     }
@@ -72,9 +76,7 @@ impl<N> EytzingerTree<N> {
 
     /// Clears the Eytzinger tree, removing all nodes.
     pub fn clear(&mut self) {
-        self.nodes.truncate(1);
-        self.nodes[0] = None;
-        self.len = 0;
+        self.remove_root_value();
     }
 
     /// Gets the root node, `None` if there was no root node.
@@ -91,17 +93,24 @@ impl<N> EytzingerTree<N> {
         self.node_mut(0).ok()
     }
 
-    /// Sets the value of the root node. If the new value is `None` then all
-    /// children will be removed.
+    /// Sets the value of the root node. All child nodes will remain as they are.
     ///
     /// # Returns
     ///
     /// The new root node.
-    pub fn set_root_value<V>(&mut self, new_value: V) -> NodeMut<N>
-    where
-        V: Into<Option<N>>,
-    {
-        self.set_value(0, new_value.into())
+    pub fn set_root_value(&mut self, new_value: N) -> NodeMut<N> {
+        self.set_value(0, new_value)
+    }
+
+    /// Removes the root value. This will also remove all children.
+    ///
+    /// # Returns
+    ///
+    /// The old root value if there was one.
+    pub fn remove_root_value(&mut self) -> Option<N> {
+        self.nodes.truncate(1);
+        self.len = 0;
+        mem::replace(&mut self.nodes[0], None)
     }
 
     /// Gets the entry for the root node.
@@ -124,43 +133,52 @@ impl<N> EytzingerTree<N> {
         self.entry(0)
     }
 
-    fn set_child_value(&mut self, parent: usize, child: usize, new_value: Option<N>) -> NodeMut<N> {
+    fn set_child_value(&mut self, parent: usize, child: usize, new_value: N) -> NodeMut<N> {
         let child_index = self.child_index(parent, child);
         self.set_value(child_index, new_value)
     }
 
-    fn set_value(&mut self, index: usize, new_value: Option<N>) -> NodeMut<N> {
+    fn ensure_size(&mut self, index: usize) {
         if index >= self.nodes.len() {
             // TODO LH use resize_default once stable
             for _ in 0..(index + 1 - self.nodes.len()) {
                 self.nodes.push(None);
             }
         }
+    }
 
-        let new_value_is_none = new_value.is_none();
-        let old_value = mem::replace(&mut self.nodes[index], new_value);
+    fn remove(&mut self, index: usize) -> N {
+        self.ensure_size(index);
 
-        if old_value.is_some() {
-            if new_value_is_none {
-                self.len -= 1;
+        let old_value = mem::replace(&mut self.nodes[index], None).unwrap();
 
-                let mut indices_to_remove = vec![];
-                for child_node in DepthFirstIter::new(
-                    self,
-                    Some(Node { tree: self, index }),
-                    DepthFirstOrder::PostOrder,
-                ) {
-                    indices_to_remove.push(child_node.index());
-                }
+        self.len -= 1;
 
-                for index_to_remove in indices_to_remove {
-                    let old_value = mem::replace(&mut self.nodes[index_to_remove], None);
-                    if old_value.is_some() {
-                        self.len -= 1
-                    }
-                }
+        let mut indices_to_remove = vec![];
+        for child_node in DepthFirstIter::new(
+            self,
+            Some(Node { tree: self, index }),
+            DepthFirstOrder::PostOrder,
+        ) {
+            indices_to_remove.push(child_node.index());
+        }
+
+        for index_to_remove in indices_to_remove {
+            let old_value = mem::replace(&mut self.nodes[index_to_remove], None);
+            if old_value.is_some() {
+                self.len -= 1
             }
-        } else if !new_value_is_none {
+        }
+
+        old_value
+    }
+
+    fn set_value(&mut self, index: usize, new_value: N) -> NodeMut<N> {
+        self.ensure_size(index);
+
+        let old_value = mem::replace(&mut self.nodes[index], Some(new_value));
+
+        if old_value.is_none() {
             self.len += 1;
         }
 
@@ -205,7 +223,7 @@ impl<N> EytzingerTree<N> {
 
     fn entry(&mut self, index: usize) -> Entry<N> {
         match self.node_mut(index) {
-            Ok(node) => Entry::Occupied(OccupiedEntry { node }),
+            Ok(node) => Entry::Occupied(node),
             Err(tree) => Entry::Vacant(VacantEntry { tree, index }),
         }
     }
@@ -245,10 +263,6 @@ impl<N> EytzingerTree<N> {
         let child_index = self.child_index(parent, child);
         self.node_mut(child_index)
     }
-
-    fn remove(&mut self, index: usize) {
-        self.set_value(index, None);
-    }
 }
 
 #[cfg(test)]
@@ -267,11 +281,11 @@ mod tests {
     fn set_root_value_sets_root() {
         let mut tree = EytzingerTree::<u32>::new(2);
 
-        let expected_root = Some(5);
+        let expected_root = 5;
         tree.set_root_value(expected_root);
 
-        assert_eq!(tree.root().map(|x| *x.value()), expected_root);
-        assert_eq!(tree.root_mut().map(|x| *x.value()), expected_root);
+        assert_eq!(tree.root().map(|x| *x.value()).unwrap(), expected_root);
+        assert_eq!(tree.root_mut().map(|x| *x.value()).unwrap(), expected_root);
     }
 
     #[test]

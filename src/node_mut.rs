@@ -1,6 +1,5 @@
 use std::ops::{Deref, DerefMut};
-use {BreadthFirstIter, DepthFirstIter, DepthFirstOrder, Entry, EytzingerTree, Node,
-     NodeChildIter};
+use {BreadthFirstIter, DepthFirstIter, DepthFirstOrder, Entry, EytzingerTree, Node, NodeChildIter};
 
 /// Represents a borrowed node in the Eytzinger tree. This node may be used mutate this node's value
 /// and child nodes.
@@ -63,16 +62,26 @@ impl<'a, N> NodeMut<'a, N> {
             .expect("a value should exist at the index")
     }
 
+    /// Gets the mutable value stored at this node.
+    ///
+    /// This differs from `value_mut` in that it takes ownership of the current node and the value
+    /// is lifetime bound to the tree and not to the current node.
+    pub fn into_value_mut(self) -> &'a mut N {
+        self.tree
+            .value_mut(self.index)
+            .as_mut()
+            .expect("a value should exist at the index")
+    }
+
     /// Gets the parent of this node or `None` is there was none.
     pub fn parent(&self) -> Option<Node<N>> {
         self.as_node().parent()
     }
 
-    /// Gets the mutable parent of this node or `None` if there wasn't one.
-    pub fn parent_mut(&mut self) -> Option<NodeMut<N>> {
-        self.tree.parent_mut(self.index).ok()
-    }
-
+    /// Gets the mutable paret of this node or `None` if there wasn't one.
+    ///
+    /// This differs from `parent_mut` in that it takes ownership of the current node and is
+    /// lifetime bound to the tree and not to the current node.
     pub fn to_parent(self) -> Result<Self, Self> {
         let tree = self.tree;
         match tree.parent_mut(self.index) {
@@ -95,7 +104,8 @@ impl<'a, N> NodeMut<'a, N> {
     }
 
     /// Gets the mutable child of this node at the specified index or `None` if there wasn't one.
-    /// This differs from `child_mut` in that it takes ownership of the current node and is 
+    ///
+    /// This differs from `child_mut` in that it takes ownership of the current node and is
     /// lifetime bound to the tree and not to the current node.
     pub fn to_child(self, index: usize) -> Result<Self, Self> {
         let tree = self.tree;
@@ -108,29 +118,35 @@ impl<'a, N> NodeMut<'a, N> {
         }
     }
 
-    /// Sets the value of the child at the specified index. If the new value is `None` then all 
-    /// children of the child will be removed.
+    /// Sets the value of the child at the specified index.
     ///
     /// # Returns
     ///
     /// The new mutable child.
-    pub fn set_child_value<V>(&mut self, index: usize, new_value: V) -> NodeMut<N>
-    where
-        V: Into<Option<N>>,
-    {
-        self.tree
-            .set_child_value(self.index, index, new_value.into())
+    pub fn set_child_value(&mut self, index: usize, new_value: N) -> NodeMut<N> {
+        self.tree.set_child_value(self.index, index, new_value)
     }
 
-    /// Gets the child entry of this node at the specified index. This node is not consumed in the 
+    /// Removes the child value at the specified child index. This will also remove all children of
+    /// the specified child.
+    ///
+    /// # Returns
+    ///
+    /// The old child value if there was one.
+    pub fn remove_child_value(&mut self, index: usize) -> Option<N> {
+        self.child_entry(index).remove()
+    }
+
+    /// Gets the child entry of this node at the specified index. This node is not consumed in the
     /// process so the child entry is lifetime bound to this node.
     pub fn child_entry(&mut self, index: usize) -> Entry<N> {
         self.tree.child_entry(self.index, index)
     }
 
-    /// Gets the child entry of this node at the specified index. This differs from `child_entry` 
-    /// in that it takes ownership of the current node and the entry is lifetime bound to the tree
-    /// and not to the current node.
+    /// Gets the child entry of this node at the specified index.
+    ///
+    /// This differs from `child_entry` in that it takes ownership of the current node and the
+    /// entry is lifetime bound to the tree and not to the current node.
     pub fn to_child_entry(self, index: usize) -> Entry<'a, N> {
         self.tree.child_entry(self.index, index)
     }
@@ -153,7 +169,7 @@ impl<'a, N> NodeMut<'a, N> {
     /// }
     /// assert_eq!(tree.root(), None);
     /// ```
-    pub fn remove(self) {
+    pub fn remove(self) -> N {
         self.tree.remove(self.index)
     }
 
@@ -193,10 +209,12 @@ impl<'a, N> NodeMut<'a, N> {
         self.as_node().child_iter()
     }
 
+    /// Gets a depth-first iterator over this and all child nodes.
     pub fn depth_first_iter<'b>(&'b self, order: DepthFirstOrder) -> DepthFirstIter<'b, N> {
         self.as_node().depth_first_iter(order)
     }
 
+    /// Gets a breadth-first iterator over this and all child nodes.
     pub fn breadth_first_iter<'b>(&'b self) -> BreadthFirstIter<'b, N> {
         self.as_node().breadth_first_iter()
     }
