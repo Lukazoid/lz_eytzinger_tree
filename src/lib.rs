@@ -1,6 +1,9 @@
 #[macro_use]
 extern crate matches;
 
+mod eytzinger_index_calculator;
+pub(crate) use self::eytzinger_index_calculator::EytzingerIndexCalculator;
+
 mod node_mut;
 pub use self::node_mut::NodeMut;
 
@@ -19,19 +22,26 @@ pub(crate) use self::traversal_root::TraversalRoot;
 mod breadth_first_iter;
 pub use self::breadth_first_iter::BreadthFirstIter;
 
+mod breadth_first_iterator;
+pub use self::breadth_first_iterator::BreadthFirstIterator;
+
 mod depth_first_order;
 pub use self::depth_first_order::DepthFirstOrder;
 
 mod depth_first_iter;
 pub use self::depth_first_iter::DepthFirstIter;
 
+mod depth_first_iterator;
+pub use self::depth_first_iterator::DepthFirstIterator;
+
 use std::mem;
+use std::ops::Range;
 
 /// An Eytzinger tree is an N-tree stored in an array structure.
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub struct EytzingerTree<N> {
     nodes: Vec<Option<N>>,
-    max_children_per_node: usize,
+    index_calculator: EytzingerIndexCalculator,
     len: usize,
 }
 
@@ -44,7 +54,7 @@ impl<N> EytzingerTree<N> {
     pub fn new(max_children_per_node: usize) -> Self {
         Self {
             nodes: vec![None],
-            max_children_per_node,
+            index_calculator: EytzingerIndexCalculator::new(max_children_per_node),
             len: 0,
         }
     }
@@ -59,6 +69,14 @@ impl<N> EytzingerTree<N> {
         BreadthFirstIter::new(self, self.root())
     }
 
+    pub fn into_depth_first_iterator(self, order: DepthFirstOrder) -> DepthFirstIterator<N> {
+        DepthFirstIterator::new(self, order)
+    }
+
+    pub fn into_breadth_first_iterator(self) -> BreadthFirstIterator<N> {
+        BreadthFirstIterator::new(self)
+    }
+
     /// Gets whether the Eytzinger tree is empty.
     pub fn is_empty(&self) -> bool {
         self.len() == 0
@@ -71,7 +89,7 @@ impl<N> EytzingerTree<N> {
 
     /// Gets the maximum number of children per parent node.
     pub fn max_children_per_node(&self) -> usize {
-        self.max_children_per_node
+        self.index_calculator.max_children_per_node()
     }
 
     /// Clears the Eytzinger tree, removing all nodes.
@@ -133,6 +151,26 @@ impl<N> EytzingerTree<N> {
         self.entry(0)
     }
 
+    pub fn map<U, F>(self, mut f: F) -> EytzingerTree<U>
+    where
+        F: FnMut(N) -> U,
+    {
+        let mut nodes = Vec::with_capacity(self.nodes.capacity());
+        for node in self.nodes {
+            let new_node = match node {
+                Some(value) => Some(f(value)),
+                None => None,
+            };
+
+            nodes.push(new_node);
+        }
+        EytzingerTree {
+            nodes: nodes,
+            index_calculator: self.index_calculator,
+            len: self.len,
+        }
+    }
+
     fn set_child_value(&mut self, parent: usize, child: usize, new_value: N) -> NodeMut<N> {
         let child_index = self.child_index(parent, child);
         self.set_value(child_index, new_value)
@@ -147,10 +185,12 @@ impl<N> EytzingerTree<N> {
         }
     }
 
-    fn remove(&mut self, index: usize) -> N {
-        self.ensure_size(index);
+    fn remove(&mut self, index: usize) -> Option<N> {
+        if index >= self.nodes.len() {
+            return None;
+        }
 
-        let old_value = mem::replace(&mut self.nodes[index], None).unwrap();
+        let old_value = mem::replace(&mut self.nodes[index], None);
 
         self.len -= 1;
 
@@ -185,21 +225,17 @@ impl<N> EytzingerTree<N> {
         NodeMut { tree: self, index }
     }
 
-    fn child_index(&self, parent: usize, child: usize) -> usize {
-        assert!(
-            child < self.max_children_per_node,
-            "the child index should be less than max_children_per_node"
-        );
-
-        (parent * self.max_children_per_node) + child + 1
+    fn child_index(&self, parent_index: usize, child_offset: usize) -> usize {
+        self.index_calculator
+            .child_index(parent_index, child_offset)
     }
 
-    fn parent_index(&self, child: usize) -> Option<usize> {
-        if child == 0 {
-            None
-        } else {
-            Some((child - 1) / self.max_children_per_node)
-        }
+    fn parent_index(&self, child_index: usize) -> Option<usize> {
+        self.index_calculator.parent_index(child_index)
+    }
+
+    fn child_indexes(&self, parent_index: usize) -> Range<usize> {
+        self.index_calculator.child_indexes(parent_index)
     }
 
     fn node(&self, index: usize) -> Option<Node<N>> {
@@ -233,12 +269,12 @@ impl<N> EytzingerTree<N> {
         self.entry(child_index)
     }
 
-    fn value(&self, index: usize) -> &Option<N> {
-        &self.nodes[index]
+    fn value(&self, index: usize) -> Option<&Option<N>> {
+        self.nodes.get(index)
     }
 
-    fn value_mut(&mut self, index: usize) -> &mut Option<N> {
-        &mut self.nodes[index]
+    fn value_mut(&mut self, index: usize) -> Option<&mut Option<N>> {
+        self.nodes.get_mut(index)
     }
 
     fn parent(&self, child: usize) -> Option<Node<N>> {
@@ -334,6 +370,58 @@ mod tests {
     }
 
     #[test]
+    fn into_depth_first_iterator_pre_order() {
+        let mut tree = EytzingerTree::<u32>::new(2);
+        {
+            let mut root = tree.set_root_value(5);
+            {
+                let mut left = root.set_child_value(0, 2);
+
+                left.set_child_value(0, 1);
+                let mut left_right = left.set_child_value(1, 4);
+                left_right.set_child_value(0, 3);
+            }
+            {
+                let mut right = root.set_child_value(1, 7);
+                right.set_child_value(1, 8);
+            }
+        }
+
+        assert_eq!(tree.len(), 7);
+
+        let depth_first: Vec<_> = tree.into_depth_first_iterator(DepthFirstOrder::PreOrder)
+            .collect();
+
+        assert_eq!(depth_first, vec![5, 2, 1, 4, 3, 7, 8]);
+    }
+
+    #[test]
+    fn into_depth_first_iterator_post_order() {
+        let mut tree = EytzingerTree::<u32>::new(2);
+        {
+            let mut root = tree.set_root_value(5);
+            {
+                let mut left = root.set_child_value(0, 2);
+
+                left.set_child_value(0, 1);
+                let mut left_right = left.set_child_value(1, 4);
+                left_right.set_child_value(0, 3);
+            }
+            {
+                let mut right = root.set_child_value(1, 7);
+                right.set_child_value(1, 8);
+            }
+        }
+
+        assert_eq!(tree.len(), 7);
+
+        let depth_first: Vec<_> = tree.into_depth_first_iterator(DepthFirstOrder::PostOrder)
+            .collect();
+
+        assert_eq!(depth_first, vec![1, 3, 4, 2, 8, 7, 5]);
+    }
+
+    #[test]
     fn breadth_first_iter_returns_empty_for_empty_tree() {
         let tree = EytzingerTree::<u32>::new(2);
 
@@ -368,4 +456,28 @@ mod tests {
         assert_eq!(breadth_first, vec![5, 2, 7, 1, 4, 8, 3]);
     }
 
+    #[test]
+    fn into_breadth_first_iterator_returns_breadth_first() {
+        let mut tree = EytzingerTree::<u32>::new(2);
+        {
+            let mut root = tree.set_root_value(5);
+            {
+                let mut left = root.set_child_value(0, 2);
+
+                left.set_child_value(0, 1);
+                let mut left_right = left.set_child_value(1, 4);
+                left_right.set_child_value(0, 3);
+            }
+            {
+                let mut right = root.set_child_value(1, 7);
+                right.set_child_value(1, 8);
+            }
+        }
+
+        assert_eq!(tree.len(), 7);
+
+        let breadth_first: Vec<_> = tree.into_breadth_first_iterator().collect();
+
+        assert_eq!(breadth_first, vec![5, 2, 7, 1, 4, 8, 3]);
+    }
 }

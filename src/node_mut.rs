@@ -58,7 +58,7 @@ impl<'a, N> NodeMut<'a, N> {
     pub fn value_mut(&mut self) -> &mut N {
         self.tree
             .value_mut(self.index)
-            .as_mut()
+            .and_then(|v| v.as_mut())
             .expect("a value should exist at the index")
     }
 
@@ -69,7 +69,7 @@ impl<'a, N> NodeMut<'a, N> {
     pub fn into_value_mut(self) -> &'a mut N {
         self.tree
             .value_mut(self.index)
-            .as_mut()
+            .and_then(|v| v.as_mut())
             .expect("a value should exist at the index")
     }
 
@@ -170,7 +170,9 @@ impl<'a, N> NodeMut<'a, N> {
     /// assert_eq!(tree.root(), None);
     /// ```
     pub fn remove(self) -> N {
-        self.tree.remove(self.index)
+        self.tree
+            .remove(self.index)
+            .expect("there should be a value at the node index")
     }
 
     /// Gets a view of this mutable node as an immutable node. The resulting node is lifetime bound

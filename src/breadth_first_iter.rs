@@ -1,4 +1,5 @@
 use std::collections::VecDeque;
+use std::iter::FusedIterator;
 use {EytzingerTree, Node, NodeChildIter, TraversalRoot};
 
 /// A breadth-first iterator.
@@ -60,4 +61,10 @@ impl<'a, N> Iterator for BreadthFirstIter<'a, N> {
         }
         None
     }
+
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        (0, Some(self.tree().len()))
+    }
 }
+
+impl<'a, N> FusedIterator for BreadthFirstIter<'a, N> {}

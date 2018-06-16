@@ -1,3 +1,4 @@
+use std::iter::FusedIterator;
 use {DepthFirstOrder, EytzingerTree, Node, NodeChildIter, TraversalRoot};
 
 /// A depth-first iterator
@@ -88,4 +89,10 @@ impl<'a, N> Iterator for DepthFirstIter<'a, N> {
         }
         None
     }
+
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        (0, Some(self.tree().len()))
+    }
 }
+
+impl<'a, N> FusedIterator for DepthFirstIter<'a, N> {}

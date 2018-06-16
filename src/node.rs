@@ -67,7 +67,7 @@ impl<'a, N> Node<'a, N> {
     pub fn value(&self) -> &'a N {
         self.tree
             .value(self.index)
-            .as_ref()
+            .and_then(|n| n.as_ref())
             .expect("a value should exist at the index")
     }
 
@@ -180,5 +180,40 @@ impl<'a, N> From<&'a NodeMut<'a, N>> for Node<'a, N> {
             tree: value.tree,
             index: value.index,
         }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use EytzingerTree;
+
+    #[test]
+    fn breadth_first_iter_returns_breadth_first() {
+        let mut tree = EytzingerTree::<u32>::new(2);
+        {
+            let mut root = tree.set_root_value(5);
+            {
+                let mut left = root.set_child_value(0, 2);
+
+                left.set_child_value(0, 1);
+                let mut left_right = left.set_child_value(1, 4);
+                left_right.set_child_value(0, 3);
+            }
+            {
+                let mut right = root.set_child_value(1, 7);
+                right.set_child_value(1, 8);
+            }
+        }
+
+        let child_breadth_first: Vec<_> = tree.root()
+            .unwrap()
+            .child(0)
+            .unwrap()
+            .breadth_first_iter()
+            .map(|n| n.value())
+            .cloned()
+            .collect();
+
+        assert_eq!(child_breadth_first, vec![2, 1, 4, 3]);
     }
 }
