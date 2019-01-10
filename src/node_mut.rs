@@ -220,6 +220,10 @@ impl<'a, N> NodeMut<'a, N> {
     pub fn breadth_first_iter<'b>(&'b self) -> BreadthFirstIter<'b, N> {
         self.as_node().breadth_first_iter()
     }
+
+    pub fn split_off(self) -> EytzingerTree<N> {
+        self.tree.split_off(self.index)
+    }
 }
 
 impl<'a, N> Deref for NodeMut<'a, N> {
@@ -234,4 +238,46 @@ impl<'a, N> DerefMut for NodeMut<'a, N> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         self.value_mut()
     }
+}
+
+#[cfg(test)]
+mod tests {
+    use EytzingerTree;
+
+    #[test]
+    fn split_off() {
+        let mut tree = EytzingerTree::new(2);
+
+        let split_off = {
+            let mut child = tree.root_entry()
+                .or_insert(10)
+                .to_child_entry(0)
+                .or_insert(5);
+            child
+                .child_entry(0)
+                .or_insert(4)
+                .child_entry(0)
+                .or_insert(1);
+            child.child_entry(1).or_insert(8);
+
+            child.split_off()
+        };
+
+        let mut expected_remaining = EytzingerTree::new(2);
+        {
+            expected_remaining.root_entry().or_insert(10);
+        }
+
+        let mut expected_split_off = EytzingerTree::new(2);
+        {
+            let mut root = expected_split_off.root_entry().or_insert(5);
+
+            root.child_entry(0).or_insert(4).child_entry(0).or_insert(1);
+            root.child_entry(1).or_insert(8);
+        }
+
+        assert_eq!(tree, expected_remaining);
+        assert_eq!(split_off, expected_split_off);
+    }
+
 }

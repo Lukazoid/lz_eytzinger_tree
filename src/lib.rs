@@ -242,6 +242,61 @@ impl<N> EytzingerTree<N> {
         old_value
     }
 
+    fn split_off(&mut self, index: usize) -> EytzingerTree<N> {
+        let mut new_tree = EytzingerTree::new(self.max_children_per_node());
+
+        // get all of the indexes which should be moved out of the source tree
+        let indexes_to_move = self.node(index).map(|n| {
+            n.depth_first_iter(DepthFirstOrder::PreOrder)
+                .map(|n| n.index())
+                .collect::<Vec<_>>()
+        });
+
+        if let Some(indexes_to_move) = indexes_to_move {
+            let mut indexes_to_move_iter = indexes_to_move.into_iter();
+
+            if let Some(index_to_move) = indexes_to_move_iter.next() {
+                let new_root_value = mem::replace(&mut self.nodes[index_to_move], None)
+                    .expect("there should be a value at the index returned by the iterator");
+
+                self.len -= 1;
+
+                let mut new_node = new_tree.set_root_value(new_root_value);
+
+                // this is used to determine if we need to move up a level
+                let mut previous_parent = self.parent_index(index_to_move);
+
+                for index_to_move in indexes_to_move_iter {
+                    let value_to_move = mem::replace(&mut self.nodes[index_to_move], None)
+                        .expect("there should be a value at the index returned by the iterator");
+
+                    self.len -= 1;
+
+                    let current_parent = self.parent_index(index_to_move)
+                        .expect("the root should only ever be the first node in the iterator");
+
+                    if let Some(mut previous_parent) = previous_parent {
+                        while current_parent <= previous_parent {
+                            new_node = new_node.to_parent().ok().expect(
+                                "the root should only ever be the first node in the iterator",
+                            );
+                            previous_parent = self.parent_index(previous_parent).unwrap();
+                        }
+                    }
+
+                    previous_parent = Some(current_parent);
+
+                    let child_offset = index_to_move - self.child_index(current_parent, 0);
+                    new_node = new_node
+                        .to_child_entry(child_offset)
+                        .or_insert(value_to_move);
+                }
+            }
+        }
+
+        new_tree
+    }
+
     fn set_value(&mut self, index: usize, new_value: N) -> NodeMut<N> {
         self.ensure_size(index);
 
