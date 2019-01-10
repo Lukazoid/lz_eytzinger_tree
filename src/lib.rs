@@ -34,15 +34,37 @@ pub use self::depth_first_iter::DepthFirstIter;
 mod depth_first_iterator;
 pub use self::depth_first_iterator::DepthFirstIterator;
 
+use std::cmp::PartialEq;
+use std::hash::{Hash, Hasher};
 use std::mem;
 use std::ops::Range;
 
 /// An Eytzinger tree is an N-tree stored in an array structure.
-#[derive(Debug, Clone, Eq, PartialEq, Hash)]
+#[derive(Debug, Clone, Eq)]
 pub struct EytzingerTree<N> {
     nodes: Vec<Option<N>>,
     index_calculator: EytzingerIndexCalculator,
     len: usize,
+}
+
+impl<N: PartialEq> PartialEq for EytzingerTree<N> {
+    fn eq(&self, other: &Self) -> bool {
+        self.index_calculator == other.index_calculator && self.len == other.len
+            && self.enumerate_values().eq(other.enumerate_values())
+    }
+}
+
+impl<N: Hash> Hash for EytzingerTree<N> {
+    fn hash<H>(&self, state: &mut H)
+    where
+        H: Hasher,
+    {
+        for indexed_value in self.enumerate_values() {
+            indexed_value.hash(state);
+        }
+        self.index_calculator.hash(state);
+        self.len.hash(state);
+    }
 }
 
 impl<N> EytzingerTree<N> {
@@ -169,6 +191,14 @@ impl<N> EytzingerTree<N> {
             index_calculator: self.index_calculator,
             len: self.len,
         }
+    }
+
+    /// Gets an iterator over each value and its index in the tree.
+    fn enumerate_values(&self) -> impl Iterator<Item = (usize, &N)> {
+        self.nodes
+            .iter()
+            .enumerate()
+            .flat_map(|(i, o)| o.as_ref().map(|v| (i, v)))
     }
 
     fn set_child_value(&mut self, parent: usize, child: usize, new_value: N) -> NodeMut<N> {
