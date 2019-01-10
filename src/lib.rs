@@ -1,6 +1,3 @@
-#[macro_use]
-extern crate matches;
-
 mod eytzinger_index_calculator;
 pub(crate) use self::eytzinger_index_calculator::EytzingerIndexCalculator;
 
@@ -388,6 +385,7 @@ impl<N> EytzingerTree<N> {
 #[cfg(test)]
 mod tests {
     use crate::{DepthFirstOrder, EytzingerTree};
+    use matches::assert_matches;
 
     #[test]
     fn root_is_none_for_empty() {

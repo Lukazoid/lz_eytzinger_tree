@@ -3,9 +3,14 @@ name = "lz_eytzinger_tree"
 version = "0.1.0"
 authors = ["Luke Horsley <luke.horsley@offset1337.co.uk>"]
 description = "An Eytzinger tree implementation, this is an N-tree implemented using array storage"
+repository = "https://github.com/lukazoid/lz_eytzinger_tree"
 license = "MIT"
 keywords = ["tree", "eytzinger"]
 categories = ["algorithms", "data-structures"]
+edition = "2018"
+
+[badges]
+travis-ci = { repository = "Lukazoid/lz_eytzinger_tree" }
 
 [dependencies]
-matches = "0.1.6"
+matches = "0.1.8"

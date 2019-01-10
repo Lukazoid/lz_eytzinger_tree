@@ -1,5 +1,6 @@
-use std::iter::FusedIterator;
 use crate::{DepthFirstOrder, EytzingerTree, Node, NodeChildIter, TraversalRoot};
+use matches::matches;
+use std::iter::FusedIterator;
 
 /// A depth-first iterator
 #[derive(Debug)]

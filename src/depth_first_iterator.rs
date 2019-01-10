@@ -1,4 +1,5 @@
 use crate::{DepthFirstOrder, EytzingerTree};
+use matches::matches;
 
 /// A depth-first iterator which returns owned values.
 #[derive(Debug, Clone)]
@@ -28,7 +29,8 @@ impl<N> Iterator for DepthFirstIterator<N> {
 
     fn next(&mut self) -> Option<Self::Item> {
         loop {
-            if self.tree
+            if self
+                .tree
                 .value(self.index)
                 .and_then(|v| v.as_ref())
                 .is_some()
@@ -36,7 +38,8 @@ impl<N> Iterator for DepthFirstIterator<N> {
                 let current_index = self.index;
                 self.index = self.tree.child_index(current_index, 0);
                 if matches!(self.order, DepthFirstOrder::PreOrder) {
-                    let value = self.tree
+                    let value = self
+                        .tree
                         .value_mut(current_index)
                         .and_then(|v| v.take())
                         .expect("the value should not have been taken already");
