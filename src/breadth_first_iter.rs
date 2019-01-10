@@ -1,6 +1,6 @@
 use std::collections::VecDeque;
 use std::iter::FusedIterator;
-use {EytzingerTree, Node, NodeChildIter, TraversalRoot};
+use crate::{EytzingerTree, Node, NodeChildIter, TraversalRoot};
 
 /// A breadth-first iterator.
 #[derive(Debug)]

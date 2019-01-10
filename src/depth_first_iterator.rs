@@ -1,4 +1,4 @@
-use {DepthFirstOrder, EytzingerTree};
+use crate::{DepthFirstOrder, EytzingerTree};
 
 /// A depth-first iterator which returns owned values.
 #[derive(Debug, Clone)]

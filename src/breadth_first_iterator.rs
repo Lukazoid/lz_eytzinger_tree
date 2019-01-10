@@ -1,4 +1,4 @@
-use EytzingerTree;
+use crate::EytzingerTree;
 use std::collections::VecDeque;
 use std::iter::{ExactSizeIterator, FusedIterator};
 use std::ops::Range;

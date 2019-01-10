@@ -1,5 +1,5 @@
 use std::ops::{Deref, DerefMut};
-use {BreadthFirstIter, DepthFirstIter, DepthFirstOrder, Entry, EytzingerTree, Node, NodeChildIter};
+use crate::{BreadthFirstIter, DepthFirstIter, DepthFirstOrder, Entry, EytzingerTree, Node, NodeChildIter};
 
 /// Represents a borrowed node in the Eytzinger tree. This node may be used mutate this node's value
 /// and child nodes.
@@ -242,7 +242,7 @@ impl<'a, N> DerefMut for NodeMut<'a, N> {
 
 #[cfg(test)]
 mod tests {
-    use EytzingerTree;
+    use crate::EytzingerTree;
 
     #[test]
     fn split_off() {

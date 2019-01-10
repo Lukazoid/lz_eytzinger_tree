@@ -1,5 +1,5 @@
 use std::ops::Deref;
-use {BreadthFirstIter, DepthFirstIter, DepthFirstOrder, EytzingerTree, NodeChildIter, NodeMut};
+use crate::{BreadthFirstIter, DepthFirstIter, DepthFirstOrder, EytzingerTree, NodeChildIter, NodeMut};
 
 /// Represents a borrowed node in the Eytzinger tree. This node may be used to navigate to parent or
 /// child nodes.
@@ -185,7 +185,7 @@ impl<'a, N> From<&'a NodeMut<'a, N>> for Node<'a, N> {
 
 #[cfg(test)]
 mod test {
-    use EytzingerTree;
+    use crate::EytzingerTree;
 
     #[test]
     fn breadth_first_iter_returns_breadth_first() {

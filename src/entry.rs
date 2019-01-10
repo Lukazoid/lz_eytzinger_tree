@@ -1,4 +1,4 @@
-use {EytzingerTree, NodeMut};
+use crate::{EytzingerTree, NodeMut};
 
 /// An entry can be used to reference a node in an Eytzinger tree. The node may or may not have a
 /// value.

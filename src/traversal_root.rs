@@ -1,4 +1,4 @@
-use {EytzingerTree, Node};
+use crate::{EytzingerTree, Node};
 
 #[derive(Debug)]
 pub(crate) enum TraversalRoot<'a, N>

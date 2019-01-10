@@ -387,7 +387,7 @@ impl<N> EytzingerTree<N> {
 
 #[cfg(test)]
 mod tests {
-    use {DepthFirstOrder, EytzingerTree};
+    use crate::{DepthFirstOrder, EytzingerTree};
 
     #[test]
     fn root_is_none_for_empty() {
