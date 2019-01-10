@@ -190,22 +190,21 @@ impl<N> EytzingerTree<N> {
             return None;
         }
 
+        let indices_to_remove: Vec<_> = self.node(index)?
+            .depth_first_iter(DepthFirstOrder::PostOrder)
+            .skip(1)
+            .map(|n| n.index())
+            .collect();
+
         let old_value = mem::replace(&mut self.nodes[index], None);
 
-        self.len -= 1;
-
-        let mut indices_to_remove = vec![];
-        for child_node in DepthFirstIter::new(
-            self,
-            Some(Node { tree: self, index }),
-            DepthFirstOrder::PostOrder,
-        ) {
-            indices_to_remove.push(child_node.index());
+        if old_value.is_some() {
+            self.len -= 1;
         }
 
         for index_to_remove in indices_to_remove {
-            let old_value = mem::replace(&mut self.nodes[index_to_remove], None);
-            if old_value.is_some() {
+            let removed_child_value = mem::replace(&mut self.nodes[index_to_remove], None);
+            if removed_child_value.is_some() {
                 self.len -= 1
             }
         }
