@@ -147,7 +147,7 @@ impl<N> EytzingerTree<N> {
     pub fn remove_root_value(&mut self) -> Option<N> {
         self.nodes.truncate(1);
         self.len = 0;
-        mem::replace(&mut self.nodes[0], None)
+        self.nodes[0].take()
     }
 
     /// Gets the entry for the root node.
@@ -223,14 +223,14 @@ impl<N> EytzingerTree<N> {
             .map(|n| n.index())
             .collect();
 
-        let old_value = mem::replace(&mut self.nodes[index], None);
+        let old_value = self.nodes[index].take();
 
         if old_value.is_some() {
             self.len -= 1;
         }
 
         for index_to_remove in indices_to_remove {
-            let removed_child_value = mem::replace(&mut self.nodes[index_to_remove], None);
+            let removed_child_value = self.nodes[index_to_remove].take();
             if removed_child_value.is_some() {
                 self.len -= 1
             }
@@ -253,7 +253,8 @@ impl<N> EytzingerTree<N> {
             let mut indexes_to_move_iter = indexes_to_move.into_iter();
 
             if let Some(index_to_move) = indexes_to_move_iter.next() {
-                let new_root_value = mem::replace(&mut self.nodes[index_to_move], None)
+                let new_root_value = self.nodes[index_to_move]
+                    .take()
                     .expect("there should be a value at the index returned by the iterator");
 
                 self.len -= 1;
@@ -264,7 +265,8 @@ impl<N> EytzingerTree<N> {
                 let mut previous_parent = self.parent_index(index_to_move);
 
                 for index_to_move in indexes_to_move_iter {
-                    let value_to_move = mem::replace(&mut self.nodes[index_to_move], None)
+                    let value_to_move = self.nodes[index_to_move]
+                        .take()
                         .expect("there should be a value at the index returned by the iterator");
 
                     self.len -= 1;
