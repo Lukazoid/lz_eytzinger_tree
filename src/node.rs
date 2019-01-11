@@ -1,5 +1,7 @@
+use crate::{
+    BreadthFirstIter, DepthFirstIter, DepthFirstOrder, EytzingerTree, NodeChildIter, NodeMut,
+};
 use std::ops::Deref;
-use crate::{BreadthFirstIter, DepthFirstIter, DepthFirstOrder, EytzingerTree, NodeChildIter, NodeMut};
 
 /// Represents a borrowed node in the Eytzinger tree. This node may be used to navigate to parent or
 /// child nodes.
@@ -205,7 +207,8 @@ mod test {
             }
         }
 
-        let child_breadth_first: Vec<_> = tree.root()
+        let child_breadth_first: Vec<_> = tree
+            .root()
             .unwrap()
             .child(0)
             .unwrap()

@@ -1,5 +1,7 @@
+use crate::{
+    BreadthFirstIter, DepthFirstIter, DepthFirstOrder, Entry, EytzingerTree, Node, NodeChildIter,
+};
 use std::ops::{Deref, DerefMut};
-use crate::{BreadthFirstIter, DepthFirstIter, DepthFirstOrder, Entry, EytzingerTree, Node, NodeChildIter};
 
 /// Represents a borrowed node in the Eytzinger tree. This node may be used mutate this node's value
 /// and child nodes.
@@ -249,7 +251,8 @@ mod tests {
         let mut tree = EytzingerTree::new(2);
 
         let split_off = {
-            let mut child = tree.root_entry()
+            let mut child = tree
+                .root_entry()
                 .or_insert(10)
                 .to_child_entry(0)
                 .or_insert(5);

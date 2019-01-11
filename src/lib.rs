@@ -46,7 +46,8 @@ pub struct EytzingerTree<N> {
 
 impl<N: PartialEq> PartialEq for EytzingerTree<N> {
     fn eq(&self, other: &Self) -> bool {
-        self.index_calculator == other.index_calculator && self.len == other.len
+        self.index_calculator == other.index_calculator
+            && self.len == other.len
             && self.enumerate_values().eq(other.enumerate_values())
     }
 }
@@ -217,7 +218,8 @@ impl<N> EytzingerTree<N> {
             return None;
         }
 
-        let indices_to_remove: Vec<_> = self.node(index)?
+        let indices_to_remove: Vec<_> = self
+            .node(index)?
             .depth_first_iter(DepthFirstOrder::PostOrder)
             .skip(1)
             .map(|n| n.index())
@@ -271,7 +273,8 @@ impl<N> EytzingerTree<N> {
 
                     self.len -= 1;
 
-                    let current_parent = self.parent_index(index_to_move)
+                    let current_parent = self
+                        .parent_index(index_to_move)
                         .expect("the root should only ever be the first node in the iterator");
 
                     if let Some(mut previous_parent) = previous_parent {
@@ -438,14 +441,16 @@ mod tests {
 
         assert_eq!(tree.len(), 7);
 
-        let depth_first: Vec<_> = tree.depth_first_iter(DepthFirstOrder::PreOrder)
+        let depth_first: Vec<_> = tree
+            .depth_first_iter(DepthFirstOrder::PreOrder)
             .map(|n| n.value())
             .cloned()
             .collect();
 
         assert_eq!(depth_first, vec![5, 2, 1, 4, 3, 7, 8]);
 
-        let depth_first: Vec<_> = tree.depth_first_iter(DepthFirstOrder::PostOrder)
+        let depth_first: Vec<_> = tree
+            .depth_first_iter(DepthFirstOrder::PostOrder)
             .map(|n| n.value())
             .cloned()
             .collect();
@@ -473,7 +478,8 @@ mod tests {
 
         assert_eq!(tree.len(), 7);
 
-        let depth_first: Vec<_> = tree.into_depth_first_iterator(DepthFirstOrder::PreOrder)
+        let depth_first: Vec<_> = tree
+            .into_depth_first_iterator(DepthFirstOrder::PreOrder)
             .collect();
 
         assert_eq!(depth_first, vec![5, 2, 1, 4, 3, 7, 8]);
@@ -499,7 +505,8 @@ mod tests {
 
         assert_eq!(tree.len(), 7);
 
-        let depth_first: Vec<_> = tree.into_depth_first_iterator(DepthFirstOrder::PostOrder)
+        let depth_first: Vec<_> = tree
+            .into_depth_first_iterator(DepthFirstOrder::PostOrder)
             .collect();
 
         assert_eq!(depth_first, vec![1, 3, 4, 2, 8, 7, 5]);
@@ -532,7 +539,8 @@ mod tests {
 
         assert_eq!(tree.len(), 7);
 
-        let breadth_first: Vec<_> = tree.breadth_first_iter()
+        let breadth_first: Vec<_> = tree
+            .breadth_first_iter()
             .map(|n| n.value())
             .cloned()
             .collect();
