@@ -1,4 +1,4 @@
-use crate::{EytzingerTree, NodeMut};
+use crate::{EytzingerTree, Node, NodeMut};
 
 /// An entry can be used to reference a node in an Eytzinger tree. The node may or may not have a
 /// value.
@@ -99,7 +99,19 @@ impl<'a, N> Entry<'a, N> {
     ///
     /// The removed value if there was a node.
     pub fn remove(self) -> Option<N> {
-        self.node().map(|n| n.remove())
+        self.node_mut().map(|n| n.remove())
+    }
+
+    /// Gets the node this entry is for, if there is one.
+    ///
+    /// # Returns
+    ///
+    /// The node if there was one, `None` otherwise.
+    pub fn node<'b>(&'b self) -> Option<Node<'b, N>> {
+        match self {
+            Entry::Occupied(node) => Some(node.as_node()),
+            Entry::Vacant(_) => None,
+        }
     }
 
     /// Gets the mutable node this entry is for, if there is one.
@@ -107,7 +119,7 @@ impl<'a, N> Entry<'a, N> {
     /// # Returns
     ///
     /// The mutable node if there was one, `None` otherwise.
-    pub fn node(self) -> Option<NodeMut<'a, N>> {
+    pub fn node_mut(self) -> Option<NodeMut<'a, N>> {
         match self {
             Entry::Occupied(node) => Some(node),
             Entry::Vacant(_) => None,
