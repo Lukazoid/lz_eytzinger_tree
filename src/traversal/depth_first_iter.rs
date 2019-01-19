@@ -1,4 +1,7 @@
-use crate::{DepthFirstOrder, EytzingerTree, Node, NodeChildIter, TraversalRoot};
+use crate::{
+    traversal::{DepthFirstOrder, NodeChildIter, TraversalRoot},
+    EytzingerTree, Node,
+};
 use matches::matches;
 use std::iter::FusedIterator;
 

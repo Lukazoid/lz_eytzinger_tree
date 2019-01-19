@@ -1,5 +1,6 @@
 use crate::{
-    BreadthFirstIter, DepthFirstIter, DepthFirstOrder, Entry, EytzingerTree, Node, NodeChildIter,
+    entry::{Entry, VacantEntry},
+    BreadthFirstIter, DepthFirstIter, DepthFirstOrder, EytzingerTree, Node, NodeChildIter,
 };
 use std::ops::{Deref, DerefMut};
 
@@ -136,7 +137,8 @@ impl<'a, N> NodeMut<'a, N> {
     ///
     /// The old child value if there was one.
     pub fn remove_child_value(&mut self, index: usize) -> Option<N> {
-        self.child_entry(index).remove()
+        let (value, _) = self.child_entry(index).remove();
+        value
     }
 
     /// Gets the child entry of this node at the specified index. This node is not consumed in the
@@ -171,15 +173,23 @@ impl<'a, N> NodeMut<'a, N> {
     /// }
     /// assert_eq!(tree.root(), None);
     /// ```
-    pub fn remove(self) -> N {
-        self.tree
+    pub fn remove(self) -> (N, VacantEntry<'a, N>) {
+        let value = self
+            .tree
             .remove(self.index)
-            .expect("there should be a value at the node index")
+            .expect("there should be a value at the node index");
+
+        let entry = VacantEntry {
+            tree: self.tree,
+            index: self.index,
+        };
+
+        (value, entry)
     }
 
     /// Gets a view of this mutable node as an immutable node. The resulting node is lifetime bound
-    /// to this node so the immutable node may not outlife this mutable node.
-    pub fn as_node<'b>(&'b self) -> Node<'b, N> {
+    /// to this node so the immutable node may not outlive this mutable node.
+    pub fn as_node(&self) -> Node<N> {
         Node {
             tree: self.tree,
             index: self.index,
@@ -209,17 +219,17 @@ impl<'a, N> NodeMut<'a, N> {
     /// let child_values: Vec<_> = root.child_iter().map(|n| n.value()).collect();
     /// assert_eq!(child_values, vec![&1, &3]);
     /// ```
-    pub fn child_iter<'b>(&'b self) -> NodeChildIter<'b, N> {
+    pub fn child_iter(&self) -> NodeChildIter<N> {
         self.as_node().child_iter()
     }
 
     /// Gets a depth-first iterator over this and all child nodes.
-    pub fn depth_first_iter<'b>(&'b self, order: DepthFirstOrder) -> DepthFirstIter<'b, N> {
+    pub fn depth_first_iter(&self, order: DepthFirstOrder) -> DepthFirstIter<N> {
         self.as_node().depth_first_iter(order)
     }
 
     /// Gets a breadth-first iterator over this and all child nodes.
-    pub fn breadth_first_iter<'b>(&'b self) -> BreadthFirstIter<'b, N> {
+    pub fn breadth_first_iter(&self) -> BreadthFirstIter<N> {
         self.as_node().breadth_first_iter()
     }
 

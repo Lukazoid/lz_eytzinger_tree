@@ -1,4 +1,7 @@
-use crate::{EytzingerTree, Node, NodeChildIter, TraversalRoot};
+use crate::{
+    traversal::{NodeChildIter, TraversalRoot},
+    EytzingerTree, Node,
+};
 use std::collections::VecDeque;
 use std::iter::FusedIterator;
 

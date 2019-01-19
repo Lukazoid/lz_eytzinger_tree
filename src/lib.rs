@@ -7,34 +7,22 @@ pub use self::node_mut::NodeMut;
 mod node;
 pub use self::node::Node;
 
-mod entry;
-pub use self::entry::{Entry, VacantEntry};
+pub mod entry;
+pub mod traversal;
 
-mod node_child_iter;
-pub use self::node_child_iter::NodeChildIter;
-
-mod traversal_root;
-pub(crate) use self::traversal_root::TraversalRoot;
-
-mod breadth_first_iter;
-pub use self::breadth_first_iter::BreadthFirstIter;
-
-mod breadth_first_iterator;
-pub use self::breadth_first_iterator::BreadthFirstIterator;
-
-mod depth_first_order;
-pub use self::depth_first_order::DepthFirstOrder;
-
-mod depth_first_iter;
-pub use self::depth_first_iter::DepthFirstIter;
-
-mod depth_first_iterator;
-pub use self::depth_first_iterator::DepthFirstIterator;
-
-use std::cmp::PartialEq;
-use std::hash::{Hash, Hasher};
-use std::mem;
-use std::ops::Range;
+use crate::{
+    entry::{Entry, VacantEntry},
+    traversal::{
+        BreadthFirstIter, BreadthFirstIterator, DepthFirstIter, DepthFirstIterator,
+        DepthFirstOrder, NodeChildIter,
+    },
+};
+use std::{
+    cmp::PartialEq,
+    hash::{Hash, Hasher},
+    mem,
+    ops::Range,
+};
 
 /// An Eytzinger tree is an N-tree stored in an array structure.
 #[derive(Debug, Clone, Eq)]
@@ -156,7 +144,7 @@ impl<N> EytzingerTree<N> {
     /// # Examples
     ///
     /// ```    
-    /// use lz_eytzinger_tree::{EytzingerTree, Entry};
+    /// use lz_eytzinger_tree::{EytzingerTree, entry::Entry};
     ///
     /// let tree = {
     ///     let mut tree = EytzingerTree::<u32>::new(8);
