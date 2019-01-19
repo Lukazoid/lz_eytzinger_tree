@@ -136,9 +136,8 @@ impl<'a, N> NodeMut<'a, N> {
     /// # Returns
     ///
     /// The old child value if there was one.
-    pub fn remove_child_value(&mut self, index: usize) -> Option<N> {
-        let (value, _) = self.child_entry(index).remove();
-        value
+    pub fn remove_child_value(&mut self, index: usize) -> (Option<N>, VacantEntry<N>) {
+        self.child_entry(index).remove()
     }
 
     /// Gets the child entry of this node at the specified index. This node is not consumed in the
