@@ -167,6 +167,8 @@ impl<N> EytzingerTree<N> {
         self.entry(0)
     }
 
+    /// Builds a new `EytzingerTree<N>` with the values mapped
+    /// using the specified selector.
     pub fn map<U, F>(self, mut f: F) -> EytzingerTree<U>
     where
         F: FnMut(N) -> U,
