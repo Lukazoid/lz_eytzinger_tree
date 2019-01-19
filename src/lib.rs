@@ -133,10 +133,18 @@ impl<N> EytzingerTree<N> {
     /// # Returns
     ///
     /// The old root value if there was one.
-    pub fn remove_root_value(&mut self) -> Option<N> {
+    pub fn remove_root_value(&mut self) -> (Option<N>, VacantEntry<N>) {
         self.nodes.truncate(1);
         self.len = 0;
-        self.nodes[0].take()
+        let value = self.nodes[0].take();
+
+        (
+            value,
+            VacantEntry {
+                tree: self,
+                index: 0,
+            },
+        )
     }
 
     /// Gets the entry for the root node.
