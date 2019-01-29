@@ -1,5 +1,5 @@
 use crate::{
-    entry::{Entry, VacantEntry},
+    entry::{EntryMut, VacantEntryMut},
     BreadthFirstIter, DepthFirstIter, DepthFirstOrder, EytzingerTree, Node, NodeChildIter,
 };
 use std::ops::{Deref, DerefMut};
@@ -136,22 +136,22 @@ impl<'a, N> NodeMut<'a, N> {
     /// # Returns
     ///
     /// The old child value if there was one.
-    pub fn remove_child_value(&mut self, index: usize) -> (Option<N>, VacantEntry<N>) {
+    pub fn remove_child_value(&mut self, index: usize) -> (Option<N>, VacantEntryMut<N>) {
         self.child_entry(index).remove()
     }
 
     /// Gets the child entry of this node at the specified index. This node is not consumed in the
     /// process so the child entry is lifetime bound to this node.
-    pub fn child_entry(&mut self, index: usize) -> Entry<N> {
-        self.tree.child_entry(self.index, index)
+    pub fn child_entry(&mut self, index: usize) -> EntryMut<N> {
+        self.tree.child_entry_mut(self.index, index)
     }
 
     /// Gets the child entry of this node at the specified index.
     ///
     /// This differs from `child_entry` in that it takes ownership of the current node and the
     /// entry is lifetime bound to the tree and not to the current node.
-    pub fn to_child_entry(self, index: usize) -> Entry<'a, N> {
-        self.tree.child_entry(self.index, index)
+    pub fn to_child_entry(self, index: usize) -> EntryMut<'a, N> {
+        self.tree.child_entry_mut(self.index, index)
     }
 
     /// Removes this node from the tree.
@@ -172,18 +172,18 @@ impl<'a, N> NodeMut<'a, N> {
     /// }
     /// assert_eq!(tree.root(), None);
     /// ```
-    pub fn remove(self) -> (N, VacantEntry<'a, N>) {
+    pub fn remove(self) -> (N, VacantEntryMut<'a, N>) {
         let value = self
             .tree
             .remove(self.index)
             .expect("there should be a value at the node index");
 
-        let entry = VacantEntry {
+        let entry_mut = VacantEntryMut {
             tree: self.tree,
             index: self.index,
         };
 
-        (value, entry)
+        (value, entry_mut)
     }
 
     /// Gets a view of this mutable node as an immutable node. The resulting node is lifetime bound
@@ -261,7 +261,7 @@ mod tests {
 
         let split_off = {
             let mut child = tree
-                .root_entry()
+                .root_entry_mut()
                 .or_insert(10)
                 .to_child_entry(0)
                 .or_insert(5);
@@ -277,12 +277,12 @@ mod tests {
 
         let mut expected_remaining = EytzingerTree::new(2);
         {
-            expected_remaining.root_entry().or_insert(10);
+            expected_remaining.root_entry_mut().or_insert(10);
         }
 
         let mut expected_split_off = EytzingerTree::new(2);
         {
-            let mut root = expected_split_off.root_entry().or_insert(5);
+            let mut root = expected_split_off.root_entry_mut().or_insert(5);
 
             root.child_entry(0).or_insert(4).child_entry(0).or_insert(1);
             root.child_entry(1).or_insert(8);

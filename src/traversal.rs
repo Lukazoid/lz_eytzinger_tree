@@ -18,3 +18,6 @@ pub use self::depth_first_iter::DepthFirstIter;
 
 mod depth_first_iterator;
 pub use self::depth_first_iterator::DepthFirstIterator;
+
+mod walk;
+pub use self::walk::{WalkAction, WalkHandler, WalkMutHandler, Walkable, WalkableMut};

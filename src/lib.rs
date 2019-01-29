@@ -11,7 +11,7 @@ pub mod entry;
 pub mod traversal;
 
 use crate::{
-    entry::{Entry, VacantEntry},
+    entry::{Entry, EntryMut, VacantEntry, VacantEntryMut},
     traversal::{
         BreadthFirstIter, BreadthFirstIterator, DepthFirstIter, DepthFirstIterator,
         DepthFirstOrder, NodeChildIter,
@@ -133,14 +133,14 @@ impl<N> EytzingerTree<N> {
     /// # Returns
     ///
     /// The old root value if there was one.
-    pub fn remove_root_value(&mut self) -> (Option<N>, VacantEntry<N>) {
+    pub fn remove_root_value(&mut self) -> (Option<N>, VacantEntryMut<N>) {
         self.nodes.truncate(1);
         self.len = 0;
         let value = self.nodes[0].take();
 
         (
             value,
-            VacantEntry {
+            VacantEntryMut {
                 tree: self,
                 index: 0,
             },
@@ -152,18 +152,22 @@ impl<N> EytzingerTree<N> {
     /// # Examples
     ///
     /// ```    
-    /// use lz_eytzinger_tree::{EytzingerTree, entry::Entry};
+    /// use lz_eytzinger_tree::{EytzingerTree, entry::EntryMut};
     ///
     /// let tree = {
     ///     let mut tree = EytzingerTree::<u32>::new(8);
-    ///     tree.root_entry().or_insert(5);
+    ///     tree.root_entry_mut().or_insert(5);
     ///     tree
     /// };
     ///
     /// let root = tree.root().unwrap();
     /// assert_eq!(root.value(), &5);
     /// ```
-    pub fn root_entry(&mut self) -> Entry<N> {
+    pub fn root_entry_mut(&mut self) -> EntryMut<N> {
+        self.entry_mut(0)
+    }
+
+    pub fn root_entry(&self) -> Entry<N> {
         self.entry(0)
     }
 
@@ -203,9 +207,12 @@ impl<N> EytzingerTree<N> {
     }
 
     fn ensure_size(&mut self, index: usize) {
-        if index >= self.nodes.len() {
-            // TODO LH use resize_default once stable
-            for _ in 0..(index + 1 - self.nodes.len()) {
+        // TODO LH Use resize_default once stable
+        let desired_len = index + 1;
+        if let Some(additional) = desired_len.checked_sub(self.nodes.len()) {
+            self.nodes.reserve(additional);
+
+            for _ in 0..additional {
                 self.nodes.push(None);
             }
         }
@@ -220,7 +227,7 @@ impl<N> EytzingerTree<N> {
             .node(index)?
             .depth_first_iter(DepthFirstOrder::PostOrder)
             .skip(1)
-            .map(|n| n.index())
+            .map(|n| n.index)
             .collect();
 
         let old_value = self.nodes[index].take();
@@ -245,7 +252,7 @@ impl<N> EytzingerTree<N> {
         // get all of the indexes which should be moved out of the source tree
         let indexes_to_move = self.node(index).map(|n| {
             n.depth_first_iter(DepthFirstOrder::PreOrder)
-                .map(|n| n.index())
+                .map(|n| n.index)
                 .collect::<Vec<_>>()
         });
 
@@ -341,16 +348,28 @@ impl<N> EytzingerTree<N> {
         }
     }
 
-    fn entry(&mut self, index: usize) -> Entry<N> {
+    fn entry_mut(&mut self, index: usize) -> EntryMut<N> {
         match self.node_mut(index) {
-            Ok(node) => Entry::Occupied(node),
-            Err(tree) => Entry::Vacant(VacantEntry { tree, index }),
+            Ok(node) => EntryMut::Occupied(node),
+            Err(tree) => EntryMut::Vacant(VacantEntryMut { tree, index }),
         }
     }
 
-    fn child_entry(&mut self, parent: usize, child: usize) -> Entry<N> {
+    fn entry(&self, index: usize) -> Entry<N> {
+        match self.node(index) {
+            Some(node) => Entry::Occupied(node),
+            None => Entry::Vacant(VacantEntry { tree: self, index }),
+        }
+    }
+
+    fn child_entry(&self, parent: usize, child: usize) -> Entry<N> {
         let child_index = self.child_index(parent, child);
         self.entry(child_index)
+    }
+
+    fn child_entry_mut(&mut self, parent: usize, child: usize) -> EntryMut<N> {
+        let child_index = self.child_index(parent, child);
+        self.entry_mut(child_index)
     }
 
     fn value(&self, index: usize) -> Option<&Option<N>> {

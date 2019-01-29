@@ -1,5 +1,6 @@
 use crate::{
-    BreadthFirstIter, DepthFirstIter, DepthFirstOrder, EytzingerTree, NodeChildIter, NodeMut,
+    entry::Entry, BreadthFirstIter, DepthFirstIter, DepthFirstOrder, EytzingerTree, NodeChildIter,
+    NodeMut,
 };
 use std::ops::Deref;
 
@@ -24,7 +25,6 @@ impl<'a, N> Clone for Node<'a, N> {
         }
     }
 }
-
 impl<'a, N> Node<'a, N> {
     /// Gets the Eytzinger tree this node is for.
     ///
@@ -44,10 +44,6 @@ impl<'a, N> Node<'a, N> {
     /// ```
     pub fn tree(&self) -> &'a EytzingerTree<N> {
         self.tree
-    }
-
-    pub(crate) fn index(&self) -> usize {
-        self.index
     }
 
     /// Gets the value stored at this node.
@@ -121,6 +117,12 @@ impl<'a, N> Node<'a, N> {
         self.tree.child(self.index, index)
     }
 
+    /// Gets the child entry of this node at the specified index. This node is not consumed in the
+    /// process so the child entry is lifetime bound to this node.
+    pub fn child_entry(&self, index: usize) -> Entry<'a, N> {
+        self.tree.child_entry(self.index, index)
+    }
+
     /// Gets an iterator over the immediate children of this node. This only includes children
     /// for which there is a node.
     ///
@@ -168,7 +170,7 @@ impl<'a, N> Deref for Node<'a, N> {
 }
 
 impl<'a, N> From<NodeMut<'a, N>> for Node<'a, N> {
-    fn from(value: NodeMut<'a, N>) -> Node<'a, N> {
+    fn from(value: NodeMut<'a, N>) -> Self {
         Node {
             tree: value.tree,
             index: value.index,
@@ -176,8 +178,8 @@ impl<'a, N> From<NodeMut<'a, N>> for Node<'a, N> {
     }
 }
 
-impl<'a, N> From<&'a NodeMut<'a, N>> for Node<'a, N> {
-    fn from(value: &'a NodeMut<'a, N>) -> Node<'a, N> {
+impl<'a, 'b, N> From<&'b NodeMut<'a, N>> for Node<'b, N> {
+    fn from(value: &'b NodeMut<'a, N>) -> Self {
         Node {
             tree: value.tree,
             index: value.index,
