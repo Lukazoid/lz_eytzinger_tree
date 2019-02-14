@@ -173,15 +173,8 @@ impl<N> EytzingerTree<N> {
     where
         F: FnMut(N) -> U,
     {
-        let mut nodes = Vec::with_capacity(self.nodes.capacity());
-        for node in self.nodes {
-            let new_node = match node {
-                Some(value) => Some(f(value)),
-                None => None,
-            };
+        let nodes = self.nodes.into_iter().map(|n| n.map(&mut f)).collect();
 
-            nodes.push(new_node);
-        }
         EytzingerTree {
             nodes: nodes,
             index_calculator: self.index_calculator,
