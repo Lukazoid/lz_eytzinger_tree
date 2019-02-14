@@ -189,6 +189,12 @@ impl<N> EytzingerTree<N> {
         }
     }
 
+    /// Shrinks the inner storage of the tree to only take up
+    /// as much space as required.
+    pub fn shrink_to_fit(&mut self) {
+        self.nodes.truncate(self.len())
+    }
+
     /// Gets an iterator over each value and its index in the tree.
     fn enumerate_values(&self) -> impl Iterator<Item = (usize, &N)> {
         self.nodes
