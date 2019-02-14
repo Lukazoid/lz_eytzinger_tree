@@ -61,7 +61,7 @@ impl<N> EytzingerTree<N> {
     /// The new Eytzinger tree.
     pub fn new(max_children_per_node: usize) -> Self {
         Self {
-            nodes: vec![None],
+            nodes: vec![],
             index_calculator: EytzingerIndexCalculator::new(max_children_per_node),
             len: 0,
         }
