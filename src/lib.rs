@@ -233,17 +233,17 @@ impl<N> EytzingerTree<N> {
             .map(|n| n.index())
             .collect();
 
-        let old_value = self.nodes[index].take();
-
-        if old_value.is_some() {
-            self.len -= 1;
-        }
-
         for index_to_remove in indices_to_remove {
             let removed_child_value = self.nodes[index_to_remove].take();
             if removed_child_value.is_some() {
                 self.len -= 1
             }
+        }
+
+        let old_value = self.nodes[index].take();
+
+        if old_value.is_some() {
+            self.len -= 1;
         }
 
         old_value
