@@ -209,9 +209,13 @@ impl<N> EytzingerTree<N> {
     }
 
     fn ensure_size(&mut self, index: usize) {
-        if index >= self.nodes.len() {
-            // TODO LH use resize_default once stable
-            for _ in 0..(index + 1 - self.nodes.len()) {
+        let desired_len = index.checked_add(1).expect("index overflow");
+
+        if let Some(additional) = desired_len.checked_sub(self.nodes.len()) {
+            // TODO LH Use resize_default once stable
+            self.nodes.reserve(additional);
+
+            for _ in 0..additional {
                 self.nodes.push(None);
             }
         }
