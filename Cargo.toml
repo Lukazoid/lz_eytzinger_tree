@@ -14,3 +14,4 @@ travis-ci = { repository = "Lukazoid/lz_eytzinger_tree" }
 
 [dependencies]
 matches = "0.1.8"
+take_mut = "0.2.2"

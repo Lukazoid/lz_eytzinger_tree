@@ -147,7 +147,7 @@ impl<N> EytzingerTree<N> {
         )
     }
 
-    /// Gets the entry for the root node.
+    /// Gets the mutable entry for the root node.
     ///
     /// # Examples
     ///
@@ -167,6 +167,7 @@ impl<N> EytzingerTree<N> {
         self.entry_mut(0)
     }
 
+    /// Gets the entry for the root node.
     pub fn root_entry(&self) -> Entry<N> {
         self.entry(0)
     }
@@ -348,17 +349,17 @@ impl<N> EytzingerTree<N> {
         }
     }
 
-    fn entry_mut(&mut self, index: usize) -> EntryMut<N> {
-        match self.node_mut(index) {
-            Ok(node) => EntryMut::Occupied(node),
-            Err(tree) => EntryMut::Vacant(VacantEntryMut { tree, index }),
-        }
-    }
-
     fn entry(&self, index: usize) -> Entry<N> {
         match self.node(index) {
             Some(node) => Entry::Occupied(node),
             None => Entry::Vacant(VacantEntry { tree: self, index }),
+        }
+    }
+
+    fn entry_mut(&mut self, index: usize) -> EntryMut<N> {
+        match self.node_mut(index) {
+            Ok(node) => EntryMut::Occupied(node),
+            Err(tree) => EntryMut::Vacant(VacantEntryMut { tree, index }),
         }
     }
 

@@ -84,6 +84,13 @@ impl<'a, N> EntryMut<'a, N> {
         }
     }
 
+    pub(crate) fn index(&self) -> usize {
+        match self {
+            EntryMut::Occupied(node) => node.index,
+            EntryMut::Vacant(vacant_entry) => vacant_entry.index,
+        }
+    }
+
     /// Gets the parent of this entry or `None` is there was none (i.e. if this entry is for the root).
     pub fn parent(&self) -> Option<Node<N>> {
         match self {
@@ -129,6 +136,29 @@ impl<'a, N> EntryMut<'a, N> {
         }
     }
 
+    /// Inserts a value at the referenced position if there is no node already there.
+    pub fn or_insert_mut(&mut self, value: N) -> &mut Self {
+        take_mut::take(self, |x| match x {
+            occupied @ EntryMut::Occupied(_) => occupied,
+            EntryMut::Vacant(vacant) => EntryMut::Occupied(vacant.insert(value)),
+        });
+
+        self
+    }
+
+    /// Inserts a value at the referenced position if there is no node already there.
+    pub fn or_insert_with_mut<F>(&mut self, value_factory: F) -> &mut Self
+    where
+        F: FnOnce() -> N,
+    {
+        take_mut::take(self, |x| match x {
+            occupied @ EntryMut::Occupied(_) => occupied,
+            EntryMut::Vacant(vacant) => EntryMut::Occupied(vacant.insert_with(value_factory)),
+        });
+
+        self
+    }
+
     /// Modifies the value (if one exists).
     ///
     /// # Returns
@@ -143,8 +173,26 @@ impl<'a, N> EntryMut<'a, N> {
                 f(node.value_mut());
                 EntryMut::Occupied(node)
             }
-            entry_mut @ EntryMut::Vacant(_) => entry_mut,
+            vacant @ EntryMut::Vacant(_) => vacant,
         }
+    }
+
+    /// Modifies the value (if one exists).
+    ///
+    /// # Returns
+    ///
+    /// The entry.
+    pub fn and_modify_mut<F>(&mut self, f: F) -> &mut Self
+    where
+        F: FnOnce(&mut N),
+    {
+        match self {
+            EntryMut::Occupied(node) => {
+                f(node.value_mut());
+            }
+            EntryMut::Vacant(_) => {}
+        }
+        self
     }
 
     /// Removes the node if one existed.
@@ -156,11 +204,30 @@ impl<'a, N> EntryMut<'a, N> {
         match self {
             EntryMut::Occupied(node) => {
                 let (removed_value, vacant_entry) = node.remove();
-
                 (Some(removed_value), vacant_entry)
             }
             EntryMut::Vacant(vacant_entry) => (None, vacant_entry),
         }
+    }
+
+    /// Removes the node if one existed.
+    ///
+    /// # Returns
+    ///
+    /// The removed value if there was a node.
+    pub fn remove_mut(&mut self) -> Option<N> {
+        let mut value_to_return = None;
+        take_mut::take(self, |x| match x {
+            EntryMut::Occupied(node) => {
+                let (removed_value, vacant_entry) = node.remove();
+                value_to_return = Some(removed_value);
+
+                EntryMut::Vacant(vacant_entry)
+            }
+            vacant @ EntryMut::Vacant(_) => vacant,
+        });
+
+        value_to_return
     }
 
     /// Gets the node this entry is for, if there is one.
@@ -170,6 +237,24 @@ impl<'a, N> EntryMut<'a, N> {
     /// The node if there was one, `None` otherwise.
     pub fn node(&self) -> Option<Node<N>> {
         Entry::from(self).node()
+    }
+
+    /// Gets the mutable value this entry is for, if there is one.
+    ///
+    /// # Returns
+    ///
+    /// The mutable value if there was one, `None` otherwise.
+    pub fn value_mut(&mut self) -> Option<&mut N> {
+        self.node_mut().map(|n| n.value_mut())
+    }
+
+    /// Gets the mutable value this entry is for, if there is one.
+    ///
+    /// # Returns
+    ///
+    /// The mutable value if there was one, `None` otherwise.
+    pub fn into_value_mut(self) -> Option<&'a mut N> {
+        self.to_node_mut().map(|n| n.into_value_mut())
     }
 
     /// Gets the mutable node this entry is for, if there is one.
@@ -184,10 +269,39 @@ impl<'a, N> EntryMut<'a, N> {
         }
     }
 
+    /// Gets the mutable node this entry is for, if there is one.
+    ///
+    /// # Returns
+    ///
+    /// The mutable node if there was one, `None` otherwise.
     pub fn to_node_mut(self) -> Option<NodeMut<'a, N>> {
         match self {
             EntryMut::Occupied(node) => Some(node),
             EntryMut::Vacant(_) => None,
+        }
+    }
+
+    /// Gets the mutable vacant entry this entry is for, if there is one.
+    ///
+    /// # Returns
+    ///
+    /// The mutable vacant entry if there was one, `None` otherwise.
+    pub fn vacant_entry_mut(&mut self) -> Option<&mut VacantEntryMut<'a, N>> {
+        match self {
+            EntryMut::Occupied(_) => None,
+            EntryMut::Vacant(vacant_entry) => Some(vacant_entry),
+        }
+    }
+
+    /// Gets the mutable vacant entry this entry is for, if there is one.
+    ///
+    /// # Returns
+    ///
+    /// The mutable vacant entry if there was one, `None` otherwise.
+    pub fn to_vacant_entry_mut(self) -> Option<VacantEntryMut<'a, N>> {
+        match self {
+            EntryMut::Occupied(_) => None,
+            EntryMut::Vacant(vacant_entry) => Some(vacant_entry),
         }
     }
 
@@ -216,10 +330,12 @@ impl<'a, N> EntryMut<'a, N> {
         }
     }
 
+    /// Gets whether this entry is occupied.
     pub fn is_occupied(&self) -> bool {
         matches!(self, EntryMut::Occupied(_))
     }
 
+    /// Gets whether this entry is vacant..
     pub fn is_vacant(&self) -> bool {
         matches!(self, EntryMut::Vacant(_))
     }

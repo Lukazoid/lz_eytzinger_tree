@@ -4,6 +4,8 @@ use crate::{
 };
 use matches::matches;
 
+/// An entry can be used to reference a node in an Eytzinger tree. The node may or may not have a
+/// value.
 #[derive(Debug)]
 pub enum Entry<'a, N>
 where
