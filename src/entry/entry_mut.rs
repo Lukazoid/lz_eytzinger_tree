@@ -92,13 +92,6 @@ impl<'a, N> EntryMut<'a, N> {
         }
     }
 
-    pub(crate) fn index(&self) -> usize {
-        match self {
-            EntryMut::Occupied(node) => node.index,
-            EntryMut::Vacant(vacant_entry) => vacant_entry.index,
-        }
-    }
-
     /// Gets the parent of this entry or `None` is there was none (i.e. if this entry is for the root).
     pub fn parent(&self) -> Option<Node<N>> {
         match self {
