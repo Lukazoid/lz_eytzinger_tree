@@ -1,5 +1,5 @@
 use crate::{
-    entry::{Entry, EntryIter},
+    entry::{Entry, EntryIter, VacantEntry},
     BreadthFirstIter, DepthFirstIter, DepthFirstOrder, EytzingerTree, Node, NodeChildIter, NodeMut,
 };
 use matches::matches;
@@ -72,6 +72,14 @@ impl<'a, N> VacantEntryMut<'a, N> {
         F: FnOnce() -> N,
     {
         self.tree.set_value(self.index, value_factory())
+    }
+
+    /// Gets an immutable view of this mutable vacant entry.
+    pub fn as_vacant_entry(&self) -> VacantEntry<N> {
+        VacantEntry {
+            tree: self.tree,
+            index: self.index,
+        }
     }
 }
 
@@ -302,6 +310,14 @@ impl<'a, N> EntryMut<'a, N> {
         match self {
             EntryMut::Occupied(_) => None,
             EntryMut::Vacant(vacant_entry) => Some(vacant_entry),
+        }
+    }
+
+    /// Gets an immutable view of this mutable entry.
+    pub fn as_entry(&self) -> Entry<N> {
+        match self {
+            EntryMut::Occupied(node) => Entry::Occupied(node.as_node()),
+            EntryMut::Vacant(vacant_entry) => Entry::Vacant(vacant_entry.as_vacant_entry()),
         }
     }
 
