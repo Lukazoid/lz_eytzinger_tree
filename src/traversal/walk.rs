@@ -100,7 +100,7 @@ impl<N> Walkable for EytzingerTree<N> {
 pub trait WalkableMut {
     type Item;
 
-    fn walk_mut<H>(self, handler: &mut H) -> Self
+    fn walk_mut<H>(&mut self, handler: &mut H)
     where
         H: WalkMutHandler<Item = Self::Item>;
 }
@@ -114,7 +114,7 @@ pub trait WalkMutHandler {
 impl<'a, N> WalkableMut for EntryMut<'a, N> {
     type Item = N;
 
-    fn walk_mut<H>(self, handler: &mut H) -> Self
+    fn walk_mut<H>(&mut self, handler: &mut H)
     where
         H: WalkMutHandler<Item = Self::Item>,
     {
@@ -122,55 +122,46 @@ impl<'a, N> WalkableMut for EntryMut<'a, N> {
         use crate::entry::EntryMut::*;
 
         let mut levels = 0usize;
-        let mut current = self;
+        let mut current = match handler.on_node(self) {
+            Parent | Stop => return,
+            Child(index) => match self {
+                Occupied(node) => {
+                    levels += 1;
+                    node.child_entry_mut(index)
+                }
+                Vacant(_) => return,
+            },
+        };
+
         loop {
             match handler.on_node(&mut current) {
-                Parent => {
-                    if levels == 0 {
-                        break;
+                Parent if levels == 0 => break,
+                Stop => break,
+                Parent => match current.to_parent() {
+                    Ok(parent) => {
+                        levels -= 1;
+                        current = parent.into();
                     }
-
-                    match current.to_parent() {
-                        Ok(parent) => {
-                            current = parent.into();
-                            levels -= 1;
-                        }
-                        Err(x) => {
-                            current = x;
-                            break;
-                        }
-                    }
-                }
+                    Err(_) => break,
+                },
                 Child(index) => match current {
                     Occupied(node) => {
-                        current = node.to_child_entry(index);
                         levels += 1;
+                        current = node.to_child_entry_mut(index);
                     }
                     Vacant(_) => break,
                 },
-                Stop => break,
             }
         }
-
-        for _ in 0..levels {
-            current = current
-                .to_parent()
-                .ok()
-                .expect("should have a parent")
-                .into()
-        }
-        current
     }
 }
 
-impl<'a, N> WalkableMut for &'a mut EytzingerTree<N> {
+impl<N> WalkableMut for EytzingerTree<N> {
     type Item = N;
-
-    fn walk_mut<H>(self, handler: &mut H) -> Self
+    fn walk_mut<H>(&mut self, handler: &mut H)
     where
         H: WalkMutHandler<Item = Self::Item>,
     {
-        self.root_entry_mut().walk_mut(handler);
-        self
+        self.root_entry_mut().walk_mut(handler)
     }
 }

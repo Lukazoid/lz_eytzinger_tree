@@ -296,7 +296,7 @@ impl<N> EytzingerTree<N> {
 
                     let child_offset = index_to_move - self.child_index(current_parent, 0);
                     new_node = new_node
-                        .to_child_entry(child_offset)
+                        .to_child_entry_mut(child_offset)
                         .or_insert(value_to_move);
                 }
             }

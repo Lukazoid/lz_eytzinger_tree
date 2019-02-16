@@ -137,12 +137,12 @@ impl<'a, N> NodeMut<'a, N> {
     ///
     /// The old child value if there was one.
     pub fn remove_child_value(&mut self, index: usize) -> (Option<N>, VacantEntryMut<N>) {
-        self.child_entry(index).remove()
+        self.child_entry_mut(index).remove()
     }
 
     /// Gets the child entry of this node at the specified index. This node is not consumed in the
     /// process so the child entry is lifetime bound to this node.
-    pub fn child_entry(&mut self, index: usize) -> EntryMut<N> {
+    pub fn child_entry_mut(&mut self, index: usize) -> EntryMut<N> {
         self.tree.child_entry_mut(self.index, index)
     }
 
@@ -150,7 +150,7 @@ impl<'a, N> NodeMut<'a, N> {
     ///
     /// This differs from `child_entry` in that it takes ownership of the current node and the
     /// entry is lifetime bound to the tree and not to the current node.
-    pub fn to_child_entry(self, index: usize) -> EntryMut<'a, N> {
+    pub fn to_child_entry_mut(self, index: usize) -> EntryMut<'a, N> {
         self.tree.child_entry_mut(self.index, index)
     }
 
@@ -263,14 +263,14 @@ mod tests {
             let mut child = tree
                 .root_entry_mut()
                 .or_insert(10)
-                .to_child_entry(0)
+                .to_child_entry_mut(0)
                 .or_insert(5);
             child
-                .child_entry(0)
+                .child_entry_mut(0)
                 .or_insert(4)
-                .child_entry(0)
+                .child_entry_mut(0)
                 .or_insert(1);
-            child.child_entry(1).or_insert(8);
+            child.child_entry_mut(1).or_insert(8);
 
             child.split_off()
         };
@@ -284,8 +284,11 @@ mod tests {
         {
             let mut root = expected_split_off.root_entry_mut().or_insert(5);
 
-            root.child_entry(0).or_insert(4).child_entry(0).or_insert(1);
-            root.child_entry(1).or_insert(8);
+            root.child_entry_mut(0)
+                .or_insert(4)
+                .child_entry_mut(0)
+                .or_insert(1);
+            root.child_entry_mut(1).or_insert(8);
         }
 
         assert_eq!(tree, expected_remaining);
