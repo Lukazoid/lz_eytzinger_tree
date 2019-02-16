@@ -139,6 +139,15 @@ impl<'a, N> Entry<'a, N> {
         }
     }
 
+    /// Gets the value this entry is for, if there is one.
+    ///
+    /// # Returns
+    ///
+    /// The value if there was one, `None` otherwise.
+    pub fn value(&self) -> Option<&'a N> {
+        self.node().map(|n| n.value())
+    }
+
     /// Gets an iterator over the immediate children of this node. This only includes children
     /// for which there is a node.
     pub fn child_iter(&self) -> EntryIter<NodeChildIter<N>> {
