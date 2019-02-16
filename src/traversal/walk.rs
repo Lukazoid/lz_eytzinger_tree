@@ -108,7 +108,7 @@ pub trait WalkableMut {
 pub trait WalkMutHandler {
     type Item;
 
-    fn on_node(&mut self, entry: &mut EntryMut<Self::Item>) -> WalkAction;
+    fn on_mut_node(&mut self, entry: &mut EntryMut<Self::Item>) -> WalkAction;
 }
 
 impl<'a, N> WalkableMut for EntryMut<'a, N> {
@@ -122,7 +122,7 @@ impl<'a, N> WalkableMut for EntryMut<'a, N> {
         use crate::entry::EntryMut::*;
 
         let mut levels = 0usize;
-        let mut current = match handler.on_node(self) {
+        let mut current = match handler.on_mut_node(self) {
             Parent | Stop => return,
             Child(index) => match self {
                 Occupied(node) => {
@@ -134,7 +134,7 @@ impl<'a, N> WalkableMut for EntryMut<'a, N> {
         };
 
         loop {
-            match handler.on_node(&mut current) {
+            match handler.on_mut_node(&mut current) {
                 Parent if levels == 0 => break,
                 Stop => break,
                 Parent => match current.to_parent() {
@@ -158,6 +158,7 @@ impl<'a, N> WalkableMut for EntryMut<'a, N> {
 
 impl<N> WalkableMut for EytzingerTree<N> {
     type Item = N;
+
     fn walk_mut<H>(&mut self, handler: &mut H)
     where
         H: WalkMutHandler<Item = Self::Item>,
