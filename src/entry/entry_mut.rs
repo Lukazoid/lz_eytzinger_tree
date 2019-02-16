@@ -203,6 +203,32 @@ impl<'a, N> EntryMut<'a, N> {
         self
     }
 
+    /// Sets the value at the specified entry.
+    ///
+    /// # Returns
+    ///
+    /// The old value and the current node.
+    pub fn set_value(self, value: N) -> (Option<N>, NodeMut<'a, N>) {
+        let (old_value, vacant_entry) = self.remove();
+
+        let node = vacant_entry.insert(value);
+
+        (old_value, node)
+    }
+
+    /// Sets the value at the specified entry.
+    ///
+    /// # Returns
+    ///
+    /// The old value.
+    pub fn set_value_mut(&mut self, value: N) -> Option<N> {
+        let old_value = self.remove_mut();
+
+        self.or_insert_mut(value);
+
+        old_value
+    }
+
     /// Removes the node if one existed.
     ///
     /// # Returns
