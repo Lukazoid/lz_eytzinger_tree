@@ -61,7 +61,7 @@ impl<N> EytzingerTree<N> {
     /// The new Eytzinger tree.
     pub fn new(max_children_per_node: usize) -> Self {
         Self {
-            nodes: vec![None],
+            nodes: vec![],
             index_calculator: EytzingerIndexCalculator::new(max_children_per_node),
             len: 0,
         }
@@ -178,20 +178,19 @@ impl<N> EytzingerTree<N> {
     where
         F: FnMut(N) -> U,
     {
-        let mut nodes = Vec::with_capacity(self.nodes.capacity());
-        for node in self.nodes {
-            let new_node = match node {
-                Some(value) => Some(f(value)),
-                None => None,
-            };
+        let nodes = self.nodes.into_iter().map(|n| n.map(&mut f)).collect();
 
-            nodes.push(new_node);
-        }
         EytzingerTree {
             nodes: nodes,
             index_calculator: self.index_calculator,
             len: self.len,
         }
+    }
+
+    /// Shrinks the inner storage of the tree to only take up
+    /// as much space as required.
+    pub fn shrink_to_fit(&mut self) {
+        self.nodes.truncate(self.len())
     }
 
     /// Gets an iterator over each value and its index in the tree.
@@ -208,9 +207,10 @@ impl<N> EytzingerTree<N> {
     }
 
     fn ensure_size(&mut self, index: usize) {
-        // TODO LH Use resize_default once stable
-        let desired_len = index + 1;
+        let desired_len = index.checked_add(1).expect("index overflow");
+
         if let Some(additional) = desired_len.checked_sub(self.nodes.len()) {
+            // TODO LH Use resize_default once stable
             self.nodes.reserve(additional);
 
             for _ in 0..additional {
@@ -231,17 +231,17 @@ impl<N> EytzingerTree<N> {
             .map(|n| n.index)
             .collect();
 
-        let old_value = self.nodes[index].take();
-
-        if old_value.is_some() {
-            self.len -= 1;
-        }
-
         for index_to_remove in indices_to_remove {
             let removed_child_value = self.nodes[index_to_remove].take();
             if removed_child_value.is_some() {
                 self.len -= 1
             }
+        }
+
+        let old_value = self.nodes[index].take();
+
+        if old_value.is_some() {
+            self.len -= 1;
         }
 
         old_value
